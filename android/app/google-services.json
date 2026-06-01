@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "642882247014",
+    "project_id": "tnpsc-group-4-master-2026",
+    "storage_bucket": "tnpsc-group-4-master-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642882247014:android:b4fec287ff0d1fe29910a7",
+        "android_client_info": {
+          "package_name": "com.tnpscmaster.tnpsc_group4_master"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642882247014-0ep2dd268eev89h4ud81dpls5bd920c4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALRd_iT7jMOr3KN1nWXXTp4rhBy9Yb4rs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642882247014-0ep2dd268eev89h4ud81dpls5bd920c4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
