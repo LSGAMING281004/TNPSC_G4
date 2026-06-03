@@ -29,7 +29,9 @@ class FirebaseAuthRepository implements AuthRepository {
     GoogleSignIn? googleSignIn,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ?? GoogleSignIn(
+          serverClientId: '642882247014-0ep2dd268eev89h4ud81dpls5bd920c4.apps.googleusercontent.com',
+        );
 
   @override
   Stream<User?> get authStateChanges => _auth.authStateChanges();

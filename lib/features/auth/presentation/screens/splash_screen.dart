@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../shared/models/user_model.dart';
+import '../../../../shared/providers/app_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -37,7 +41,41 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Future<void> _navigateAfterDelay() async {
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
-    context.go(AppRoutes.dashboard);
+
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser != null) {
+        // User is already signed in — restore their profile from Firestore
+        final doc = await FirebaseFirestore.instance
+            .collection(AppConstants.usersCollection)
+            .doc(firebaseUser.uid)
+            .get();
+
+        if (doc.exists) {
+          final userModel = UserModel.fromFirestore(doc);
+          ref.read(currentUserProvider.notifier).state = userModel;
+        } else {
+          // Firestore doc missing — create a basic one from Firebase Auth data
+          final userModel = UserModel(
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName ?? '',
+            email: firebaseUser.email ?? '',
+            photoURL: firebaseUser.photoURL,
+            createdAt: DateTime.now(),
+            lastLoginAt: DateTime.now(),
+          );
+          ref.read(currentUserProvider.notifier).state = userModel;
+        }
+
+        if (mounted) context.go(AppRoutes.dashboard);
+      } else {
+        // No user signed in — go to login
+        if (mounted) context.go(AppRoutes.login);
+      }
+    } catch (e) {
+      debugPrint('Splash auth restore error: $e');
+      if (mounted) context.go(AppRoutes.login);
+    }
   }
 
   @override

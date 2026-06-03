@@ -5,6 +5,7 @@ import 'package:animate_do/animate_do.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/providers/app_providers.dart';
+import '../../../../shared/providers/firestore_providers.dart';
 import '../../../../shared/widgets/dashboard/exam_countdown_widget.dart';
 import '../../../../shared/widgets/dashboard/daily_study_target_widget.dart';
 import '../../../../shared/widgets/dashboard/progress_summary_card.dart';
@@ -18,7 +19,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+    // Watch real-time Firestore profile (also keeps currentUserProvider in sync)
+    final userAsync = ref.watch(userProfileStreamProvider);
+    final user = userAsync.valueOrNull ?? ref.watch(currentUserProvider);
     final userName = user?.name ?? 'Student';
 
     return Scaffold(

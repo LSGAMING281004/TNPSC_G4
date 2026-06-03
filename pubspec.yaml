@@ -68,6 +68,10 @@ dependencies:
   package_info_plus: ^8.2.1
   flutter_animate: ^4.5.2
 
+  # Admin Panel
+  data_table_2: ^2.5.15
+  file_picker: ^8.1.6
+
   # Icons
   cupertino_icons: ^1.0.8
   flutter_vector_icons: ^2.0.0

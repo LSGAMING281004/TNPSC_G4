@@ -54,6 +54,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final state = ref.read(authNotifierProvider);
       if (state.isAuthenticated) {
         context.go(AppRoutes.dashboard);
+      } else if (state.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error!), backgroundColor: AppColors.error),
+        );
       }
     }
   }
@@ -65,6 +69,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final state = ref.read(authNotifierProvider);
       if (state.isAuthenticated) {
         context.go(AppRoutes.dashboard);
+      } else if (state.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error!), backgroundColor: AppColors.error),
+        );
       }
     }
   }

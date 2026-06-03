@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/providers/app_providers.dart';
@@ -51,7 +52,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repository.signInWithEmail(email: email, password: password);
       _ref.read(currentUserProvider.notifier).state = user;
       state = AuthState.authenticated(user);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('signInWithEmail error: $e\n$stack');
       state = AuthState.error(e.toString());
     }
   }
@@ -68,7 +70,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       _ref.read(currentUserProvider.notifier).state = user;
       state = AuthState.authenticated(user);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('signUpWithEmail error: $e\n$stack');
       state = AuthState.error(e.toString());
     }
   }
@@ -79,7 +82,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repository.signInWithGoogle();
       _ref.read(currentUserProvider.notifier).state = user;
       state = AuthState.authenticated(user);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('signInWithGoogle error: $e\n$stack');
       state = AuthState.error(e.toString());
     }
   }
@@ -90,7 +94,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repository.signInAsGuest();
       _ref.read(currentUserProvider.notifier).state = user;
       state = AuthState.authenticated(user);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('signInAsGuest error: $e\n$stack');
       state = AuthState.error(e.toString());
     }
   }
@@ -106,7 +111,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _repository.resetPassword(email: email);
       state = AuthState.initial();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('resetPassword error: $e\n$stack');
       state = AuthState.error(e.toString());
     }
   }

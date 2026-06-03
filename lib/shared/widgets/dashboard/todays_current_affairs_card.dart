@@ -1,40 +1,115 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
+import '../../../../shared/providers/firestore_providers.dart';
 
-class TodaysCurrentAffairsCard extends StatelessWidget {
+class TodaysCurrentAffairsCard extends ConsumerWidget {
   const TodaysCurrentAffairsCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final affairsAsync = ref.watch(currentAffairsStreamProvider(3));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text("Today's Current Affairs", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text("Today's Current Affairs",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const Spacer(),
-            TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: AppColors.accentSaffron, fontSize: 13))),
+            TextButton(
+                onPressed: () => context.push(AppRoutes.currentAffairs),
+                child: const Text('View All',
+                    style: TextStyle(
+                        color: AppColors.accentSaffron, fontSize: 13))),
           ],
         ),
         const SizedBox(height: 8),
-        ...List.generate(3, (i) => _NewsCard(
-          title: ['Tamil Nadu Budget 2026 Highlights', 'New Education Policy Updates', 'TNPSC Exam Date Announced'][i],
-          category: ['Economy', 'Education', 'TNPSC'][i],
-          time: ['2h ago', '4h ago', '6h ago'][i],
-          color: [AppColors.gsSubject, AppColors.success, AppColors.accentSaffron][i],
-        )),
+        affairsAsync.when(
+          loading: () => const Center(
+              child: Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(
+                strokeWidth: 2, color: AppColors.accentSaffron),
+          )),
+          error: (_, __) => const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('Unable to load current affairs',
+                style: TextStyle(color: Colors.grey)),
+          ),
+          data: (articles) {
+            if (articles.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No current affairs yet.',
+                    style: TextStyle(color: Colors.grey)),
+              );
+            }
+            return Column(
+              children: articles.map((article) {
+                final category =
+                    (article['category'] as String?) ?? 'General';
+                final color = _categoryColor(category);
+                final title = (article['title'] as String?) ?? 'Untitled';
+                final timeAgo = _timeAgo(article['publishedAt']);
+                return _NewsCard(
+                    title: title,
+                    category: category,
+                    time: timeAgo,
+                    color: color);
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
+  }
+
+  Color _categoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'economy':
+        return AppColors.gsSubject;
+      case 'education':
+        return AppColors.success;
+      case 'tnpsc':
+        return AppColors.accentSaffron;
+      case 'science':
+        return AppColors.info;
+      case 'sports':
+      case 'tn politics':
+        return AppColors.tamilSubject;
+      default:
+        return AppColors.warning;
+    }
+  }
+
+  String _timeAgo(dynamic timestamp) {
+    if (timestamp == null) return '';
+    DateTime date;
+    if (timestamp is Timestamp) {
+      date = timestamp.toDate();
+    } else {
+      return '';
+    }
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 }
 
 class _NewsCard extends StatelessWidget {
-  final String title;
-  final String category;
-  final String time;
+  final String title, category, time;
   final Color color;
-
-  const _NewsCard({required this.title, required this.category, required this.time, required this.color});
+  const _NewsCard(
+      {required this.title,
+      required this.category,
+      required this.time,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +119,19 @@ class _NewsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10)),
             child: Icon(Icons.newspaper, color: color, size: 22),
           ),
           const SizedBox(width: 12),
@@ -58,17 +139,30 @@ class _NewsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                      child: Text(category, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4)),
+                      child: Text(category,
+                          style: TextStyle(
+                              color: color,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(width: 8),
-                    Text(time, style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
+                    Text(time,
+                        style: TextStyle(
+                            color: Colors.grey.shade500, fontSize: 11)),
                   ],
                 ),
               ],
