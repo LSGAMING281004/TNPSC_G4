@@ -9,7 +9,6 @@ import '../../shared/models/content_models.dart';
 import '../../shared/widgets/admin_empty_state.dart';
 import '../../shared/widgets/admin_shell.dart';
 import '../../shared/services/admin_activity_log_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 final _fs = FirebaseFirestore.instance;
 

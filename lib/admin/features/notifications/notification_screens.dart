@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/constants/admin_constants.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../shared/services/admin_activity_log_service.dart';
@@ -98,8 +99,15 @@ class _NotificationHistoryScreenState extends ConsumerState<NotificationHistoryS
   @override
   Widget build(BuildContext context) {
     final nAsync = ref.watch(notifHistoryProvider);
-    return nAsync.when(
-      data: (items) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      ElevatedButton.icon(
+        onPressed: () => context.go('/admin/notifications/compose'),
+        icon: const Icon(Icons.add, size: 18),
+        label: const Text('Compose Notification'),
+      ),
+      const SizedBox(height: 16),
+      nAsync.when(
+        data: (items) {
         if (items.isEmpty) return const AdminEmptyState(icon: Icons.notifications_none, message: 'No notifications sent yet.');
         return Container(
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
@@ -128,6 +136,7 @@ class _NotificationHistoryScreenState extends ConsumerState<NotificationHistoryS
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
-    );
+      ),
+    ]);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../core/constants/admin_constants.dart';
 import '../../shared/widgets/admin_stat_card.dart';
@@ -618,8 +619,7 @@ class _QuickActionTileState extends State<_QuickActionTile> {
       onExit: (_) => setState(() => _hovering = false),
       child: GestureDetector(
         onTap: () {
-          // Use GoRouter to navigate
-          // GoRouter.of(context).go(widget.route);
+          context.go(widget.route);
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
