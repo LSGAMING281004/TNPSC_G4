@@ -23,6 +23,10 @@ class DashboardScreen extends ConsumerWidget {
     final userAsync = ref.watch(userProfileStreamProvider);
     final user = userAsync.valueOrNull ?? ref.watch(currentUserProvider);
     final userName = user?.name ?? 'Student';
+    
+    // Check for unread notifications
+    final notificationsAsync = ref.watch(notificationsStreamProvider);
+    final hasUnread = notificationsAsync.valueOrNull?.any((n) => (n['read'] as bool?) == false) ?? false;
 
     return Scaffold(
       body: CustomScrollView(
@@ -66,15 +70,16 @@ class DashboardScreen extends ConsumerWidget {
                           icon: Stack(
                             children: [
                               const Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
-                              Positioned(
-                                right: 0, top: 0,
-                                child: Container(
-                                  width: 10, height: 10,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.accentSaffron, shape: BoxShape.circle,
+                              if (hasUnread)
+                                Positioned(
+                                  right: 0, top: 0,
+                                  child: Container(
+                                    width: 10, height: 10,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.accentSaffron, shape: BoxShape.circle,
+                                    ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),

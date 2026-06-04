@@ -6,6 +6,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/providers/firestore_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../shared/utils/guest_restrictions.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -134,10 +135,15 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               // Menu items
+
               _MenuTile(
                   icon: Icons.leaderboard,
                   label: 'Leaderboard',
-                  onTap: () => context.push(AppRoutes.leaderboard)),
+                  onTap: () {
+                    if (GuestRestrictions.check(context, ref, featureName: 'Leaderboard')) {
+                      context.push(AppRoutes.leaderboard);
+                    }
+                  }),
               _MenuTile(
                   icon: Icons.settings,
                   label: 'Settings',

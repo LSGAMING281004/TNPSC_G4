@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
@@ -21,6 +23,24 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     'Explain this Tamil grammar rule: எழுத்துகள்',
   ];
 
+  late final GenerativeModel _model;
+  late final ChatSession _chat;
+
+  @override
+  void initState() {
+    super.initState();
+    _model = GenerativeModel(
+      model: 'gemini-pro',
+      apiKey: 'AIzaSyBLBXUCIsQLIrxBLGKcfhpPGm94FaaEap8',
+    );
+    
+    // For gemini-pro, system instructions are best provided as the first message in the chat history
+    _chat = _model.startChat(history: [
+      Content.text(AppConstants.claudeSystemPrompt),
+      Content.model([TextPart('Understood. I am TamilBot, ready to help with TNPSC Group 4 preparation.')])
+    ]);
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -28,7 +48,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     super.dispose();
   }
 
-  void _sendMessage(String text) {
+  Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
     setState(() {
       _messages.add(_ChatMessage(text: text, isUser: true));
@@ -37,19 +57,30 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     _messageController.clear();
     _scrollToBottom();
 
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final response = await _chat.sendMessage(Content.text(text));
       if (mounted) {
         setState(() {
           _isTyping = false;
           _messages.add(_ChatMessage(
-            text: 'Thank you for your question about "$text". As TamilBot, I can help you with TNPSC Group 4 exam preparation.\n\nThe Panchayati Raj system is a three-tier system of local self-governance:\n\n1. Village Panchayat (கிராம பஞ்சாயத்)\n2. Panchayat Union (பஞ்சாயத்து ஒன்றியம்)\n3. District Panchayat (மாவட்ட பஞ்சாயத்து)\n\nThis topic is important for TNPSC exams under Indian Polity section.',
+            text: response.text ?? 'I could not generate a response. Please try again.',
             isUser: false,
           ));
         });
         _scrollToBottom();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add(_ChatMessage(
+            text: 'I\'m sorry, I encountered an error. Please try again. ($e)',
+            isUser: false,
+          ));
+        });
+        _scrollToBottom();
+      }
+    }
   }
 
   void _scrollToBottom() {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/language/question_display_helper.dart';
-import '../../../core/language/language_provider.dart';
-import '../../../shared/widgets/bilingual_text.dart';
+import '../../../../core/language/question_display_helper.dart';
+import '../../../../core/language/language_provider.dart';
+import '../../../../shared/widgets/bilingual_text.dart';
 
 // Temporary re-export of model — replace with real import
-export '../../../core/language/question_display_helper.dart'
+export '../../../../core/language/question_display_helper.dart'
     show CurrentAffairsModel;
 
 class ArticleCard extends ConsumerWidget {

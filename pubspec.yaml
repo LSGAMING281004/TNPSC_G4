@@ -81,6 +81,7 @@ dependencies:
   audio_service: ^0.18.18
   audio_session: ^0.2.3
   supabase_flutter: ^2.12.4
+  google_generative_ai: ^0.4.7
 
 dev_dependencies:
   flutter_test:

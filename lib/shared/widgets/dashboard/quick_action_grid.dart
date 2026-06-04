@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../shared/utils/guest_restrictions.dart';
 
-class QuickActionGrid extends StatelessWidget {
+class QuickActionGrid extends ConsumerWidget {
   const QuickActionGrid({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final actions = [
       _QuickAction('Mock Test', Icons.assignment, AppColors.accentSaffron, AppRoutes.mockTests),
       _QuickAction('Questions', Icons.quiz, AppColors.info, AppRoutes.questionBank),
@@ -33,7 +35,14 @@ class QuickActionGrid extends StatelessWidget {
           itemBuilder: (context, index) {
             final action = actions[index];
             return GestureDetector(
-              onTap: () => context.push(action.route),
+              onTap: () {
+                if (action.route == AppRoutes.aiAssistant) {
+                  if (!GuestRestrictions.check(context, ref, featureName: 'AI Chatbot')) {
+                    return;
+                  }
+                }
+                context.push(action.route);
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: action.color.withValues(alpha: 0.08),

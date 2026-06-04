@@ -67,6 +67,7 @@ Aptitude & Mental Ability.
   static const String achievementsCollection = 'achievements';
   static const String testAttemptsCollection = 'test_attempts';
   static const String conversationsCollection = 'conversations';
+  static const String quotesCollection = 'quotes';
 
   // Subjects
   static const List<String> subjects = ['Tamil', 'General Studies', 'Aptitude & Mental Ability'];

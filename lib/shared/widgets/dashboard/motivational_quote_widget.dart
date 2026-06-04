@@ -1,18 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 
-class MotivationalQuoteWidget extends StatefulWidget {
+// Stream provider to fetch quotes dynamically from Firestore
+final clientQuotesStreamProvider = StreamProvider<List<Map<String, String>>>((ref) {
+  return FirebaseFirestore.instance
+      .collection(AppConstants.quotesCollection)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((s) => s.docs.map((d) {
+            final data = d.data();
+            return {
+              'ta': (data['ta'] as String? ?? ''),
+              'en': (data['en'] as String? ?? ''),
+            };
+          }).toList());
+});
+
+class MotivationalQuoteWidget extends ConsumerStatefulWidget {
   const MotivationalQuoteWidget({super.key});
 
   @override
-  State<MotivationalQuoteWidget> createState() => _MotivationalQuoteWidgetState();
+  ConsumerState<MotivationalQuoteWidget> createState() => _MotivationalQuoteWidgetState();
 }
 
-class _MotivationalQuoteWidgetState extends State<MotivationalQuoteWidget> {
+class _MotivationalQuoteWidgetState extends ConsumerState<MotivationalQuoteWidget> {
   final PageController _controller = PageController();
   int _currentIndex = 0;
 
-  static const List<Map<String, String>> quotes = [
+  static const List<Map<String, String>> defaultQuotes = [
     {'ta': 'கற்றது கைமண் அளவு, கல்லாதது உலகளவு', 'en': 'What you have learned is a mere handful; what you haven\'t learned is the size of the world.'},
     {'ta': 'அறிவே ஆற்றல்', 'en': 'Knowledge is power.'},
     {'ta': 'முயற்சி திருவினை ஆக்கும்', 'en': 'Effort leads to prosperity.'},
@@ -28,6 +46,24 @@ class _MotivationalQuoteWidgetState extends State<MotivationalQuoteWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final quotesAsync = ref.watch(clientQuotesStreamProvider);
+
+    return quotesAsync.when(
+      data: (firestoreQuotes) {
+        final quotes = firestoreQuotes.isNotEmpty ? firestoreQuotes : defaultQuotes;
+        // Ensure index is within range of loaded quotes
+        if (_currentIndex >= quotes.length) {
+          _currentIndex = 0;
+        }
+
+        return _buildQuoteCard(quotes);
+      },
+      loading: () => _buildQuoteCard(defaultQuotes),
+      error: (_, __) => _buildQuoteCard(defaultQuotes),
+    );
+  }
+
+  Widget _buildQuoteCard(List<Map<String, String>> quotes) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

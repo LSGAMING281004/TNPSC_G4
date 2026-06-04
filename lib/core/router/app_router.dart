@@ -28,6 +28,7 @@ import '../../features/notifications/presentation/screens/notifications_screen.d
 import '../../features/audio_books/presentation/screens/audio_books_home_screen.dart';
 import '../../features/audio_books/presentation/screens/audio_player_screen.dart';
 import '../constants/app_colors.dart';
+import '../../shared/utils/guest_restrictions.dart';
 
 /// Named routes for the application
 class AppRoutes {
@@ -229,8 +230,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+
+
 /// Main shell with bottom navigation bar
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
@@ -246,12 +249,17 @@ class MainShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex(context),
         onDestinationSelected: (index) {
+          if (index == 3) {
+            if (!GuestRestrictions.check(context, ref, featureName: 'Analytics')) {
+              return;
+            }
+          }
           switch (index) {
             case 0: context.go(AppRoutes.dashboard); break;
             case 1: context.go(AppRoutes.mockTests); break;

@@ -12,7 +12,9 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/language/language.dart';
 import 'core/services/audio_handler.dart';
+import 'core/services/push_notification_service.dart';
 import 'shared/providers/app_providers.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Register background FCM handler before anything else
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
 
   await Supabase.initialize(
     url: AppConstants.supabaseUrl,
@@ -47,6 +53,9 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Request push notification permissions and subscribe to topics
+  await PushNotificationService.initialize();
 
   runApp(
     ProviderScope(

@@ -32,6 +32,8 @@ const _allNavItems = <_NavItem>[
       requiredRoles: ['superAdmin', 'contentAdmin']),
   _NavItem(label: 'Current Affairs', icon: Icons.newspaper_rounded, route: '/admin/current-affairs',
       requiredRoles: ['superAdmin', 'contentAdmin']),
+  _NavItem(label: 'Daily Inspiration', icon: Icons.format_quote_rounded, route: '/admin/quotes',
+      requiredRoles: ['superAdmin', 'contentAdmin']),
   _NavItem(label: 'Users', icon: Icons.people_rounded, route: '/admin/users'),
   _NavItem(label: 'Notifications', icon: Icons.notifications_rounded, route: '/admin/notifications',
       requiredRoles: ['superAdmin', 'contentAdmin']),

@@ -31,6 +31,7 @@ class AdminConstants {
   static const String analyticsSummaryCollection = 'analytics_summary';
   static const String metadataCollection = 'metadata';
   static const String audioBooksCollection = 'audio_books';
+  static const String quotesCollection = 'quotes';
 
   // Admin roles
   static const String roleSuperAdmin = 'superAdmin';

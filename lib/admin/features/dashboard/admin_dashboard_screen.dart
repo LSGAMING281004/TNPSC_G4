@@ -192,18 +192,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 1000
-            ? 4
-            : constraints.maxWidth > 600
-                ? 2
-                : 1;
-        return GridView.count(
-          crossAxisCount: crossAxisCount,
+        return GridView.extent(
+          maxCrossAxisExtent: 250,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 2.2,
+          childAspectRatio: 1.5,
           children: [
             AdminStatCard(
               label: 'Total Users',
@@ -261,14 +256,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 1000 ? 4 : 2;
-        return GridView.count(
-          crossAxisCount: crossAxisCount,
+        return GridView.extent(
+          maxCrossAxisExtent: 250,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 2.5,
+          childAspectRatio: 1.5,
           children: [
             AdminStatCard(
               label: 'Study Materials',
