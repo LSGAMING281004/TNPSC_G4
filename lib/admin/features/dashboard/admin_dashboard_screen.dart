@@ -44,6 +44,21 @@ final todayActiveUsersProvider = StreamProvider<int>((ref) {
       .map((s) => s.size);
 });
 
+final totalAudioBooksProvider = StreamProvider<int>((ref) {
+  return _firestore
+      .collection('audio_books')
+      .where('isActive', isEqualTo: true)
+      .snapshots()
+      .map((s) => s.size);
+});
+
+final totalStudyMaterialsProvider = StreamProvider<int>((ref) {
+  return _firestore
+      .collection('study_materials')
+      .snapshots()
+      .map((s) => s.size);
+});
+
 final recentActivityProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
   return _firestore
       .collection(AdminConstants.adminActivityLogCollection)
@@ -114,8 +129,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ─── Stat Cards ───
+        // ─── Stats Row 1: Core Metrics ───
         _buildStatCards(),
+        const SizedBox(height: 12),
+        // ─── Stats Row 2: Content Metrics ───
+        _buildContentStatCards(),
         const SizedBox(height: 24),
         // ─── Charts Row ───
         LayoutBuilder(
@@ -221,7 +239,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               isLoading: tests.isLoading,
             ),
             AdminStatCard(
-              label: "Today's Active Users",
+              label: "Today's Active",
               value: activeToday.when(
                 data: (v) => _formatNumber(v),
                 loading: () => '—',
@@ -230,6 +248,49 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               icon: Icons.trending_up_rounded,
               color: AdminTheme.warning,
               isLoading: activeToday.isLoading,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildContentStatCards() {
+    final audioBooks = ref.watch(totalAudioBooksProvider);
+    final materials = ref.watch(totalStudyMaterialsProvider);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 1000 ? 4 : 2;
+        return GridView.count(
+          crossAxisCount: crossAxisCount,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 2.5,
+          children: [
+            AdminStatCard(
+              label: 'Study Materials',
+              value: materials.when(
+                data: (v) => _formatNumber(v),
+                loading: () => '—',
+                error: (_, __) => 'Err',
+              ),
+              icon: Icons.menu_book_rounded,
+              color: const Color(0xFF2980B9),
+              isLoading: materials.isLoading,
+            ),
+            AdminStatCard(
+              label: 'Audio Books',
+              value: audioBooks.when(
+                data: (v) => _formatNumber(v),
+                loading: () => '—',
+                error: (_, __) => 'Err',
+              ),
+              icon: Icons.headphones_rounded,
+              color: const Color(0xFF9B59B6),
+              isLoading: audioBooks.isLoading,
             ),
           ],
         );
@@ -459,6 +520,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             label: 'Add Current Affairs',
             color: AdminTheme.saffron,
             route: '/admin/current-affairs/add',
+          ),
+          _QuickActionTile(
+            icon: Icons.headphones_rounded,
+            label: 'Add Audio Book',
+            color: const Color(0xFF9B59B6),
+            route: '/admin/audio-books/add',
           ),
         ],
       ),

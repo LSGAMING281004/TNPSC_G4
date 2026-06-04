@@ -25,6 +25,8 @@ import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dar
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/audio_books/presentation/screens/audio_books_home_screen.dart';
+import '../../features/audio_books/presentation/screens/audio_player_screen.dart';
 import '../constants/app_colors.dart';
 
 /// Named routes for the application
@@ -53,6 +55,8 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String notifications = '/notifications';
+  static const String audioBooks = '/audio-books';
+  static const String audioPlayer = '/audio-player';
 }
 
 /// GoRouter provider
@@ -199,6 +203,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.notifications,
         name: 'notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.audioBooks,
+        name: 'audioBooks',
+        builder: (context, state) => const AudioBooksHomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.audioPlayer,
+        name: 'audioPlayer',
+        builder: (context, state) => AudioPlayerScreen(
+          bookId: state.uri.queryParameters['bookId'] ?? '',
+        ),
       ),
     ],
     redirect: (context, state) {

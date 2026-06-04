@@ -16,6 +16,8 @@ import '../../features/analytics/admin_analytics_screen.dart';
 import '../../features/syllabus/syllabus_screen.dart';
 import '../../features/previous_papers/previous_papers_screens.dart';
 import '../../features/settings/admin_settings_screen.dart';
+import '../../features/audio_books/audio_books_list_screen.dart';
+import '../../features/audio_books/add_edit_audio_book_screen.dart';
 import '../../shared/widgets/admin_shell.dart';
 import '../../shared/providers/admin_auth_provider.dart';
 
@@ -65,6 +67,10 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/admin/previous-papers', builder: (_, __) => const PreviousPapersScreen()),
           GoRoute(path: '/admin/previous-papers/add', builder: (_, __) => const AddPaperScreen()),
           GoRoute(path: '/admin/settings', builder: (_, __) => const AdminSettingsScreen()),
+          GoRoute(path: '/admin/audio-books', builder: (_, __) => const AdminAudioBooksScreen()),
+          GoRoute(path: '/admin/audio-books/add', builder: (_, __) => const AddEditAudioBookScreen()),
+          GoRoute(path: '/admin/audio-books/edit', builder: (_, state) =>
+            AddEditAudioBookScreen(audioBookId: state.uri.queryParameters['id'])),
         ],
       ),
     ],

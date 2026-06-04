@@ -31,6 +31,11 @@ class AppConstants {
   static const String claudeApiUrl = 'https://api.anthropic.com/v1/messages';
   static const String claudeModel = 'claude-sonnet-4-20250514';
 
+  // Supabase Config (For Storage)
+  static const String supabaseUrl = 'https://qgslvlywsjjjnuwrubzo.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnc2x2bHl3c2pqam51d3J1YnpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDkzMTgsImV4cCI6MjA5NjEyNTMxOH0.EPc_aw7YQivze_qUNEdVqQGlqr-vweOUbQR4QGN4530';
+  static const String supabaseMediaBucket = 'tnpsc-media';
+
   // Claude System Prompt
   static const String claudeSystemPrompt = '''
 You are TamilBot, an expert TNPSC Group 4 exam coach. Answer in simple Tamil and English. 

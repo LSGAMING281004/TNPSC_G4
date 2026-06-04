@@ -46,7 +46,7 @@ class _MotivationalQuoteWidgetState extends State<MotivationalQuoteWidget> {
             ],
           ),
           SizedBox(
-            height: 100,
+            height: 140,
             child: PageView.builder(
               controller: _controller,
               onPageChanged: (i) => setState(() => _currentIndex = i),

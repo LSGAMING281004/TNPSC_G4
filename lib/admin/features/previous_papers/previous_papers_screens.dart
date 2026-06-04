@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/admin_constants.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../shared/services/admin_activity_log_service.dart';
 import '../../shared/widgets/admin_empty_state.dart';
@@ -62,7 +63,13 @@ class _PreviousPapersScreenState extends ConsumerState<PreviousPapersScreen> {
                 subtitle: Text('${p['totalQuestions'] ?? 0} questions • ${p['duration'] ?? 0} min'),
                 trailing: IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
                   onPressed: () async {
-                    if (p['storageRef'] != null) try { await FirebaseStorage.instance.ref(p['storageRef']).delete(); } catch (_) {}
+                    if (p['storageRef'] != null) {
+                      try {
+                        await Supabase.instance.client.storage
+                            .from(AppConstants.supabaseMediaBucket)
+                            .remove([p['storageRef']]);
+                      } catch (_) {}
+                    }
                     await _fs.collection(AdminConstants.previousPapersCollection).doc(p['id']).delete();
                   }),
               )),
@@ -108,9 +115,19 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
     setState(() => _uploading = true);
     try {
       final path = '${AdminConstants.previousPapersPath}/$_year/${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final ref = FirebaseStorage.instance.ref(path);
-      await ref.putData(_pdf!.bytes!, SettableMetadata(contentType: 'application/pdf'));
-      final url = await ref.getDownloadURL();
+      
+      await Supabase.instance.client.storage
+          .from(AppConstants.supabaseMediaBucket)
+          .uploadBinary(
+            path,
+            _pdf!.bytes!,
+            fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
+          );
+          
+      final url = Supabase.instance.client.storage
+          .from(AppConstants.supabaseMediaBucket)
+          .getPublicUrl(path);
+          
       await _fs.collection(AdminConstants.previousPapersCollection).add({
         'year': _year, 'subject': _subject, 'part': _part,
         'totalQuestions': _totalQ, 'totalMarks': _totalMarks, 'duration': _duration,

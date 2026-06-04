@@ -15,6 +15,7 @@ class QuickActionGrid extends StatelessWidget {
       _QuickAction('Current Affairs', Icons.newspaper, AppColors.tamilSubject, AppRoutes.currentAffairs),
       _QuickAction('Past Papers', Icons.history_edu, AppColors.warning, AppRoutes.questionBank),
       _QuickAction('AI Chatbot', Icons.smart_toy, AppColors.gsSubject, AppRoutes.aiAssistant),
+      _QuickAction('Audio Books', Icons.headphones, const Color(0xFF9B59B6), AppRoutes.audioBooks),
     ];
 
     return Column(

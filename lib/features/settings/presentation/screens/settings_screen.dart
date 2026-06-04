@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/language/language_extension.dart';
+import '../../../../core/language/language_provider.dart';
 import '../../../../shared/providers/app_providers.dart';
+import '../widgets/language_settings_section.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -9,20 +12,22 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
-    final language = ref.watch(languageProvider);
+    ref.watch(languageNotifierProvider); // rebuild on language change
+    final s = context.s;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), backgroundColor: AppColors.primaryNavy),
+      appBar: AppBar(title: Text(s.settings), backgroundColor: AppColors.primaryNavy),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const LanguageSettingsSection(),
+          const SizedBox(height: 16),
           _SectionTitle('Appearance'),
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             child: Column(children: [
               SwitchListTile(
-                title: const Text('Dark Mode'),
-                subtitle: const Text('இருள் பயன்முறை'),
+                title: Text(s.darkMode),
                 secondary: const Icon(Icons.dark_mode),
                 value: isDarkMode,
                 activeThumbColor: AppColors.accentSaffron,
@@ -30,25 +35,6 @@ class SettingsScreen extends ConsumerWidget {
                   ref.read(isDarkModeProvider.notifier).state = v;
                   ref.read(settingsBoxProvider).put('isDarkMode', v);
                 },
-              ),
-              const Divider(height: 0),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: const Text('Language'),
-                subtitle: const Text('மொழி'),
-                trailing: DropdownButton<String>(
-                  value: language,
-                  underline: const SizedBox(),
-                  items: const [
-                    DropdownMenuItem(value: 'en', child: Text('English')),
-                    DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
-                    DropdownMenuItem(value: 'both', child: Text('Both')),
-                  ],
-                  onChanged: (v) {
-                    ref.read(languageProvider.notifier).state = v!;
-                    ref.read(settingsBoxProvider).put('language', v);
-                  },
-                ),
               ),
             ]),
           ),

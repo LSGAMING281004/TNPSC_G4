@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/admin_constants.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../shared/models/content_models.dart';
 import '../../shared/services/admin_activity_log_service.dart';
@@ -81,7 +82,11 @@ class _MaterialsListScreenState extends ConsumerState<MaterialsListScreen> {
     ));
     if (ok == true) {
       if (m.storageRef.isNotEmpty) {
-        try { await FirebaseStorage.instance.ref(m.storageRef).delete(); } catch (_) {}
+        try { 
+          await Supabase.instance.client.storage
+              .from(AppConstants.supabaseMediaBucket)
+              .remove([m.storageRef]);
+        } catch (_) {}
       }
       await _fs.collection(AdminConstants.studyMaterialsCollection).doc(m.id).delete();
     }
@@ -120,19 +125,23 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
     setState(() { _uploading = true; _progress = 0; });
     try {
       final storagePath = '${AdminConstants.studyMaterialsPath}/$_subject/$_chapter/${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final ref = FirebaseStorage.instance.ref(storagePath);
-      final uploadTask = ref.putData(_file!.bytes!, SettableMetadata(contentType: 'application/pdf'));
-      uploadTask.snapshotEvents.listen((snap) {
-        setState(() => _progress = snap.bytesTransferred / snap.totalBytes);
-      });
-      await uploadTask;
-      final url = await ref.getDownloadURL();
-      final meta = await ref.getMetadata();
+      
+      await Supabase.instance.client.storage
+          .from(AppConstants.supabaseMediaBucket)
+          .uploadBinary(
+            storagePath,
+            _file!.bytes!,
+            fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
+          );
+          
+      final url = Supabase.instance.client.storage
+          .from(AppConstants.supabaseMediaBucket)
+          .getPublicUrl(storagePath);
 
       await _fs.collection(AdminConstants.studyMaterialsCollection).add(StudyMaterialModel(
         titleTa: _titleTa, titleEn: _titleEn, descTa: _descTa, descEn: _descEn,
         subject: _subject, chapter: _chapter, storageRef: storagePath,
-        downloadUrl: url, fileSize: meta.size ?? _file!.size,
+        downloadUrl: url, fileSize: _file!.size,
         contentType: 'application/pdf', uploadedBy: FirebaseAuth.instance.currentUser?.uid,
       ).toFirestore());
       await AdminActivityLogService.log(action: 'Uploaded study material', targetCollection: AdminConstants.studyMaterialsCollection);
@@ -173,8 +182,7 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
         )),
         if (_uploading) ...[
           const SizedBox(height: 12),
-          LinearProgressIndicator(value: _progress, color: AdminTheme.saffron),
-          Text('${(_progress * 100).toStringAsFixed(0)}%', style: const TextStyle(fontSize: 12)),
+          const LinearProgressIndicator(color: AdminTheme.saffron),
         ],
         const SizedBox(height: 24),
         Row(children: [

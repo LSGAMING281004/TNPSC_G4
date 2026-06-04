@@ -30,6 +30,7 @@ class AdminConstants {
   static const String adminConfigCollection = 'admin_config';
   static const String analyticsSummaryCollection = 'analytics_summary';
   static const String metadataCollection = 'metadata';
+  static const String audioBooksCollection = 'audio_books';
 
   // Admin roles
   static const String roleSuperAdmin = 'superAdmin';
@@ -42,6 +43,8 @@ class AdminConstants {
   static const String studyMaterialsPath = 'study_materials';
   static const String currentAffairsImagesPath = 'current_affairs/images';
   static const String previousPapersPath = 'previous_papers';
+  static const String audioBooksAudioPath = 'audio_books/audio';
+  static const String audioBooksCoverPath = 'audio_books/covers';
 
   // Subjects
   static const List<String> defaultSubjects = [

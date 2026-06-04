@@ -28,6 +28,8 @@ const _allNavItems = <_NavItem>[
       requiredRoles: ['superAdmin', 'contentAdmin']),
   _NavItem(label: 'Study Materials', icon: Icons.menu_book_rounded, route: '/admin/materials',
       requiredRoles: ['superAdmin', 'contentAdmin']),
+  _NavItem(label: 'Audio Books', icon: Icons.headphones_rounded, route: '/admin/audio-books',
+      requiredRoles: ['superAdmin', 'contentAdmin']),
   _NavItem(label: 'Current Affairs', icon: Icons.newspaper_rounded, route: '/admin/current-affairs',
       requiredRoles: ['superAdmin', 'contentAdmin']),
   _NavItem(label: 'Users', icon: Icons.people_rounded, route: '/admin/users'),
