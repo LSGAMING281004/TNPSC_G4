@@ -81,45 +81,85 @@ class _DailyTab extends ConsumerWidget {
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6)),
-                          child: Text(category,
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: color)),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6)),
+                              child: Text(category,
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: color)),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(body.isEmpty ? 'No additional details available.' : body, 
+                                 style: const TextStyle(fontSize: 15, height: 1.5)),
+                          ],
                         ),
-                        const Spacer(),
-                        Text(timeAgo,
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade500)),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Close'),
+                        )
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Text(title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 15)),
-                    if (body.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(body,
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade600),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                                color: color.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6)),
+                            child: Text(category,
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: color)),
+                          ),
+                          const Spacer(),
+                          Text(timeAgo,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade500)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(title,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 15)),
+                      if (body.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(body,
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade600),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             );

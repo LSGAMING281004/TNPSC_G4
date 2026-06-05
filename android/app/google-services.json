@@ -7,6 +7,43 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:642882247014:android:e249a75eac2f093e9910a7",
+        "android_client_info": {
+          "package_name": "com.thiral.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "642882247014-sbb24389jjksi41k8fg0920ml0r7t4j3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thiral.app",
+            "certificate_hash": "751e9f775b134c189f9c96e2f086001921a26342"
+          }
+        },
+        {
+          "client_id": "642882247014-0ep2dd268eev89h4ud81dpls5bd920c4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALRd_iT7jMOr3KN1nWXXTp4rhBy9Yb4rs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "642882247014-0ep2dd268eev89h4ud81dpls5bd920c4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:642882247014:android:b4fec287ff0d1fe29910a7",
         "android_client_info": {
           "package_name": "com.tnpscmaster.tnpsc_group4_master"

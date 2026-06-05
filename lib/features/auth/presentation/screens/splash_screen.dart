@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_router.dart';
@@ -35,6 +37,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
   @override
   void initState() {
     super.initState();
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
 
     // 1. Logo Scale Animation (0.5 to 1.0, ElasticOut, 800ms)
     _logoScaleController = AnimationController(
@@ -142,7 +154,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
     } catch (e) {
       debugPrint('Splash auth restore error: $e');
       FlutterNativeSplash.remove();
-      if (mounted) context.go(AppRoutes.login);
+      if (mounted) {
+        context.go(AppRoutes.login);
+      }
     }
   }
 

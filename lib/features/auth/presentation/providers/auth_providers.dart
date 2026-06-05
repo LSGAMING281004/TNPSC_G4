@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -102,6 +104,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     await _repository.signOut();
+    
+    // Clear the local Hive box to prevent old profile data from showing up for Guests
+    try {
+      final userBox = Hive.box(AppConstants.userBox);
+      await userBox.clear();
+    } catch (e) {
+      debugPrint('Error clearing userBox: $e');
+    }
+
     _ref.read(currentUserProvider.notifier).state = null;
     state = AuthState.unauthenticated();
   }

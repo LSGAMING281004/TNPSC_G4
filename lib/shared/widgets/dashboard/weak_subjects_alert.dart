@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/utils/guest_restrictions.dart';
 
 class WeakSubjectsAlert extends ConsumerWidget {
   const WeakSubjectsAlert({super.key});
@@ -56,7 +59,11 @@ class WeakSubjectsAlert extends ConsumerWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (GuestRestrictions.check(context, ref, featureName: 'Practice')) {
+                    context.push(AppRoutes.questionBank);
+                  }
+                },
                 child: const Text('Practice',
                     style: TextStyle(
                         color: AppColors.accentSaffron,

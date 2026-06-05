@@ -1,41 +1,59 @@
 {
-  "name": "Thiral — TNPSC Group 4 Master 2026",
-  "short_name": "Thiral",
-  "description": "Thiral (திறல்) means skill, mastery, and ability in Tamil — the perfect name for an exam prep app that builds the skills aspirants need to succeed.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0B1E36",
-  "theme_color": "#F07020",
-  "lang": "ta-IN",
-  "scope": "/",
-  "id": "com.thiral.app",
-  "icons": [
-    {"src":"icons/Icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"icons/Icon-512.png","sizes":"512x512","type":"image/png"},
-    {"src":"icons/Icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
-    {"src":"icons/Icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/home.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Home dashboard"
-    },
-    {
-      "src": "screenshots/mock-test.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mock test"
-    },
-    {
-      "src": "screenshots/analytics.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Performance analytics"
-    }
-  ]
+    "name": "Thiral — TNPSC Group 4 Master 2026",
+    "short_name": "Thiral",
+    "description": "Thiral (திறல்) means skill, mastery, and ability in Tamil — the perfect name for an exam prep app that builds the skills aspirants need to succeed.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0B1E36",
+    "theme_color": "#F07020",
+    "lang": "ta-IN",
+    "scope": "/",
+    "id": "com.thiral.app",
+    "screenshots": [
+        {
+            "src": "screenshots/home.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Home dashboard"
+        },
+        {
+            "src": "screenshots/mock-test.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Mock test"
+        },
+        {
+            "src": "screenshots/analytics.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Performance analytics"
+        }
+    ],
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
 }
