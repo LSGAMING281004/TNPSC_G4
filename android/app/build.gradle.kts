@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tnpscmaster.tnpsc_group4_master"
+    namespace = "com.thiral.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,11 +22,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.tnpscmaster.tnpsc_group4_master"
+        applicationId = "com.thiral.app"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
         multiDexEnabled = true
     }
 

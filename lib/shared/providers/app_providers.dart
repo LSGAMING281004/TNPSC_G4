@@ -24,6 +24,12 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();
 });
 
+// ─── Auth UID Provider ───
+final authUidProvider = Provider<String?>((ref) {
+  final authState = ref.watch(authStateProvider);
+  return authState.valueOrNull?.uid;
+});
+
 // ─── Current User Provider ───
 final currentUserProvider = StateProvider<UserModel?>((ref) => null);
 

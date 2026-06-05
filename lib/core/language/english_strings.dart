@@ -1,7 +1,10 @@
 import 'app_strings.dart';
 
 class EnglishStrings extends AppStrings {
-  @override String get appName => 'TNPSC Group 4 Master 2026';
+  @override String get appName => 'Thiral';
+  @override String get appFullName => 'Thiral — TNPSC Group 4 Master 2026';
+  @override String get appTagline => 'Master every skill. Crack every exam.';
+  @override String get welcomeTo => 'Welcome to Thiral';
   @override String get loading => 'Loading...';
   @override String get error => 'Error';
   @override String get retry => 'Retry';

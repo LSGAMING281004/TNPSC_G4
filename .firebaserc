@@ -1,5 +1,17 @@
 {
   "projects": {
-    "default": "tnpsc-group-4-master-2026"
+    "default": "thiral-app"
+  },
+  "targets": {
+    "thiral-app": {
+      "hosting": {
+        "app": [
+          "thiral-app-main"
+        ],
+        "admin": [
+          "thiral-app-admin"
+        ]
+      }
+    }
   }
 }

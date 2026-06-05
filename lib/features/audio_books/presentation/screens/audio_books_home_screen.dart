@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/language/language_provider.dart';
 import '../../../../core/language/language_extension.dart';
-import '../../../../shared/models/audio_book_model.dart';
 import '../../data/audio_book_providers.dart';
 import '../widgets/audio_book_card.dart';
 import '../widgets/mini_player.dart';

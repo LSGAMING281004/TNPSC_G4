@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 import 'app_providers.dart';
@@ -12,12 +11,17 @@ import 'app_providers.dart';
 /// Streams the current user's Firestore profile in real time.
 /// Automatically updates `currentUserProvider` so every screen stays fresh.
 final userProfileStreamProvider = StreamProvider<UserModel?>((ref) {
-  final authUser = FirebaseAuth.instance.currentUser;
-  if (authUser == null) return Stream.value(null);
+  final uid = ref.watch(authUidProvider);
+  if (uid == null) {
+    Future.microtask(() {
+      ref.read(currentUserProvider.notifier).state = null;
+    });
+    return Stream.value(null);
+  }
 
   return FirebaseFirestore.instance
       .collection(AppConstants.usersCollection)
-      .doc(authUser.uid)
+      .doc(uid)
       .snapshots()
       .map((snap) {
     if (!snap.exists) return null;
@@ -162,7 +166,7 @@ final leaderboardStreamProvider =
 /// Streams the current user's test attempts.
 final userTestAttemptsStreamProvider =
     StreamProvider<List<Map<String, dynamic>>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
+  final uid = ref.watch(authUidProvider);
   if (uid == null) return Stream.value([]);
 
   return FirebaseFirestore.instance
@@ -179,7 +183,7 @@ final userTestAttemptsStreamProvider =
 
 /// Streams today's test attempts count for daily target.
 final todayAttemptsCountProvider = StreamProvider<int>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
+  final uid = ref.watch(authUidProvider);
   if (uid == null) return Stream.value(0);
 
   final todayStart = DateTime.now().copyWith(

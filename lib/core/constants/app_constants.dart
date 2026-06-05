@@ -3,9 +3,19 @@ class AppConstants {
   AppConstants._();
 
   // App Info
-  static const String appName = 'TNPSC Group 4 Master 2026';
-  static const String appNameTamil = 'TNPSC குரூப் 4 மாஸ்டர் 2026';
-  static const String appVersion = '1.0.0';
+  static const String appName         = 'Thiral';
+  static const String appNameTamil    = 'திறல்';
+  static const String appFullName     = 'Thiral — TNPSC Group 4 Master 2026';
+  static const String appTagline      = 'Master every skill. Crack every exam.';
+  static const String appTaglineTamil = 'திறல் பெறு · வெற்றி அடை';
+  static const String bundleId        = 'com.thiral.app';
+  static const String appDomain       = 'thiral.app';
+  static const String appVersion      = '1.0.0';
+  static const String playStoreId     = 'com.thiral.app';
+  static const String appStoreId      = 'REPLACE_WITH_APPLE_ID';
+  static const String supportEmail    = 'support@thiral.app';
+  static const String privacyUrl      = 'https://thiral.app/privacy';
+  static const String termsUrl        = 'https://thiral.app/terms';
 
   // Exam Info
   static final DateTime examDate = DateTime(2026, 9, 20); // Expected exam date

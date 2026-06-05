@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <!-- Definitions for reused components/styles -->
+  <defs>
+    <style>
+      .title-text { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 700; font-size: 24px; fill: #FFFDE0; }
+      .subtitle-text { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 500; font-size: 14px; fill: #F5C518; letter-spacing: 0.05em; }
+    </style>
+  </defs>
+
+  <!-- Global Dark Background for the Master Board -->
+  <rect width="1024" height="1024" fill="#071220"/>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 1 — Primary App Icon (Col 1, Row 1) -->
+  <!-- ========================================== -->
+  <g id="variant-primary" transform="translate(208, 48) scale(0.6)">
+    <!-- 480x480 rounded squircle -->
+    <rect width="480" height="480" rx="108" fill="#0B1E36"/>
+    
+    <!-- Decorative subtle arc behind the lamp -->
+    <path d="M 170,235 A 72,72 0 0,0 310,235" fill="none" stroke="#F5C518" stroke-width="2" opacity="0.25"/>
+    
+    <!-- Stars in arc above flame -->
+    <circle cx="240" cy="50" r="4" fill="#F5C518" opacity="0.4"/>
+    <circle cx="210" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+    <circle cx="270" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+
+    <!-- Flame Assembly -->
+    <!-- Outer Flame (Orange) -->
+    <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z" fill="#F07020"/>
+    <!-- Inner Flame (Gold) -->
+    <path d="M 240,210 C 195,210 195,150 240,100 C 285,150 285,210 240,210 Z" fill="#F5C518"/>
+    <!-- Core Flame (Warm White) -->
+    <path d="M 240,200 C 210,200 210,160 240,120 C 270,160 270,200 240,200 Z" fill="#FFFDE0" opacity="0.9"/>
+
+    <!-- Oil Bowl -->
+    <ellipse cx="240" cy="230" rx="52" ry="22" fill="#F5C518"/>
+    <ellipse cx="240" cy="228" rx="40" ry="16" fill="#C88010"/>
+
+    <!-- Neck / Stem -->
+    <rect x="230" y="252" width="20" height="38" rx="8" fill="#E8A820"/>
+
+    <!-- Lamp Base & Stand -->
+    <!-- Main Trapezoid Base -->
+    <path d="M200,330 L170,390 L310,390 L280,330 Z" fill="#F5C518"/>
+    <!-- Base Highlight -->
+    <path d="M205,330 L200,350 L280,350 L275,330 Z" fill="#FFFDE0" opacity="0.2"/>
+    <!-- Base Plate -->
+    <rect x="160" y="390" width="160" height="18" rx="6" fill="#C88010"/>
+
+    <!-- Book Pages Accent Overlay -->
+    <path d="M 160,396 Q 240,388 240,402 Q 240,388 320,396 L 320,408 Q 240,400 240,414 Q 240,400 160,408 Z" fill="#FFFDE0" opacity="0.95"/>
+
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#FFFDE0" text-anchor="middle">PRIMARY APP ICON</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 2 — Monochrome Dark (Col 2, Row 1) -->
+  <!-- ========================================== -->
+  <g id="variant-mono-dark" transform="translate(528, 48) scale(0.6)">
+    <rect width="480" height="480" rx="108" fill="#0B1E36"/>
+    
+    <!-- Entire mark in single color #F5C518 -->
+    <g fill="#F5C518">
+      <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z"/>
+      <ellipse cx="240" cy="230" rx="52" ry="22"/>
+      <rect x="230" y="252" width="20" height="38" rx="8"/>
+      <path d="M200,330 L170,390 L310,390 L280,330 Z"/>
+      <rect x="160" y="390" width="160" height="18" rx="6"/>
+    </g>
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#FFFDE0" text-anchor="middle">MONO DARK (GOLD)</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 3 — Monochrome Light (Col 1, Row 2) -->
+  <!-- ========================================== -->
+  <g id="variant-mono-light" transform="translate(208, 368) scale(0.6)">
+    <rect width="480" height="480" rx="108" fill="#F8F6F0"/>
+    
+    <!-- Entire mark in single color #0B1E36 -->
+    <g fill="#0B1E36">
+      <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z"/>
+      <ellipse cx="240" cy="230" rx="52" ry="22"/>
+      <rect x="230" y="252" width="20" height="38" rx="8"/>
+      <path d="M200,330 L170,390 L310,390 L280,330 Z"/>
+      <rect x="160" y="390" width="160" height="18" rx="6"/>
+    </g>
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#0B1E36" text-anchor="middle">MONO LIGHT (NAVY)</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 4 — Horizontal Wordmark (Col 2, Row 2) -->
+  <!-- ========================================== -->
+  <g id="variant-wordmark-h" transform="translate(528, 368) scale(0.6)">
+    <!-- Navy Squircle background -->
+    <rect width="480" height="480" rx="108" fill="#0B1E36"/>
+    
+    <!-- Centered 480x160 area frame for preview -->
+    <g transform="translate(0, 160)">
+      <!-- Background of wordmark strip -->
+      <rect width="480" height="160" fill="#0B1E36"/>
+      
+      <!-- Vilakku Mark (scaled down to 80px height on left) -->
+      <g transform="translate(10, 32) scale(0.2)">
+        <!-- Outer Flame -->
+        <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z" fill="#F07020"/>
+        <!-- Inner Flame -->
+        <path d="M 240,210 C 195,210 195,150 240,100 C 285,150 285,210 240,210 Z" fill="#F5C518"/>
+        <!-- Core Flame -->
+        <path d="M 240,200 C 210,200 210,160 240,120 C 270,160 270,200 240,200 Z" fill="#FFFDE0"/>
+        <!-- Oil Bowl -->
+        <ellipse cx="240" cy="230" rx="52" ry="22" fill="#F5C518"/>
+        <ellipse cx="240" cy="228" rx="40" ry="16" fill="#C88010"/>
+        <!-- Stem -->
+        <rect x="230" y="252" width="20" height="38" rx="8" fill="#E8A820"/>
+        <!-- Base -->
+        <path d="M200,330 L170,390 L310,390 L280,330 Z" fill="#F5C518"/>
+        <rect x="160" y="390" width="160" height="18" rx="6" fill="#C88010"/>
+      </g>
+      
+      <!-- Vertical Divider -->
+      <line x1="115" y1="24" x2="115" y2="136" stroke="#F5C518" stroke-width="2" opacity="0.3"/>
+      
+      <!-- Text elements -->
+      <text x="135" y="72" font-family="'Inter', 'Outfit', sans-serif" font-weight="800" font-size="42" fill="#FFFFFF">TNPSC Master</text>
+      <text x="135" y="112" font-family="'Inter', 'Outfit', sans-serif" font-weight="600" font-size="20" fill="#F5C518" letter-spacing="0.08em">GROUP 4 · 2026</text>
+    </g>
+    
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#FFFDE0" text-anchor="middle">HORIZONTAL WORDMARK</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 5 — Adaptive Icon FG (Col 1, Row 3) -->
+  <!-- ========================================== -->
+  <g id="variant-adaptive-fg" transform="translate(208, 688) scale(0.6)">
+    <!-- Light dashed border representing transparency / safe bounds -->
+    <rect width="480" height="480" fill="none" stroke="#F5C518" stroke-width="2" stroke-dasharray="8,8" rx="108" opacity="0.5"/>
+    
+    <!-- Central safe circle preview (66% zone) -->
+    <circle cx="240" cy="240" r="158" fill="#0B1E36" opacity="0.15"/>
+    
+    <!-- Centered Vilakku Mark scaled down by 0.66 -->
+    <g transform="translate(81.6, 81.6) scale(0.66)">
+      <!-- Outer Flame -->
+      <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z" fill="#F07020"/>
+      <!-- Inner Flame -->
+      <path d="M 240,210 C 195,210 195,150 240,100 C 285,150 285,210 240,210 Z" fill="#F5C518"/>
+      <!-- Core Flame -->
+      <path d="M 240,200 C 210,200 210,160 240,120 C 270,160 270,200 240,200 Z" fill="#FFFDE0" opacity="0.9"/>
+      <!-- Oil Bowl -->
+      <ellipse cx="240" cy="230" rx="52" ry="22" fill="#F5C518"/>
+      <ellipse cx="240" cy="228" rx="40" ry="16" fill="#C88010"/>
+      <!-- Stem -->
+      <rect x="230" y="252" width="20" height="38" rx="8" fill="#E8A820"/>
+      <!-- Base -->
+      <path d="M200,330 L170,390 L310,390 L280,330 Z" fill="#F5C518"/>
+      <rect x="160" y="390" width="160" height="18" rx="6" fill="#C88010"/>
+    </g>
+    
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#FFFDE0" text-anchor="middle">ADAPTIVE FOREGROUND</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- VARIANT 6 — Favicon Compact (Col 2, Row 3) -->
+  <!-- ========================================== -->
+  <g id="variant-favicon" transform="translate(528, 688) scale(0.6)">
+    <rect width="480" height="480" rx="108" fill="#081220" opacity="0.4"/>
+    
+    <!-- 64x64 container centered in the cell -->
+    <g transform="translate(112, 112) scale(4)">
+      <!-- 64x64 rounded icon base -->
+      <rect width="64" height="64" rx="14" fill="#0B1E36"/>
+      
+      <!-- Ultra-simplified Vilakku Mark centered -->
+      <g transform="translate(-16, -16) scale(0.2)">
+        <!-- Flame (simplified, outer only) -->
+        <path d="M 240,220 C 170,220 170,130 240,70 C 310,130 310,220 240,220 Z" fill="#F07020"/>
+        <path d="M 240,210 C 190,210 190,140 240,95 C 290,140 290,210 240,210 Z" fill="#F5C518"/>
+        <!-- Bowl -->
+        <ellipse cx="240" cy="230" rx="64" ry="24" fill="#F5C518"/>
+        <!-- Stem -->
+        <rect x="228" y="254" width="24" height="40" rx="4" fill="#F5C518"/>
+        <!-- Base Plate -->
+        <rect x="150" y="380" width="180" height="30" rx="8" fill="#F5C518"/>
+      </g>
+    </g>
+    
+    <text x="240" y="445" font-family="sans-serif" font-size="20" font-weight="bold" fill="#FFFDE0" text-anchor="middle">FAVICON COMPACT (64px)</text>
+  </g>
+</svg>

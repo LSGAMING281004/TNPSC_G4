@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1E36" />
+      <stop offset="100%" stop-color="#071220" />
+    </linearGradient>
+    
+    <!-- Accent Gradient -->
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F07020" />
+      <stop offset="50%" stop-color="#F5C518" />
+      <stop offset="100%" stop-color="#FFFDE0" />
+    </linearGradient>
+
+    <!-- Font Family Style -->
+    <style>
+      .bold-title { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 900; font-size: 64px; fill: #FFFFFF; }
+      .gold-year { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 900; font-size: 110px; fill: #F5C518; }
+      .feature-text { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 500; font-size: 24px; fill: #FFFDE0; fill-opacity: 0.75; letter-spacing: 0.05em; }
+      .badge-text { font-family: 'Inter', 'Outfit', 'Segoe UI', sans-serif; font-weight: 700; font-size: 18px; fill: #F5C518; letter-spacing: 0.1em; text-transform: uppercase; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-grad)" />
+
+  <!-- Decorative radial arcs behind logo -->
+  <circle cx="250" cy="315" r="280" fill="none" stroke="#F5C518" stroke-width="1.5" opacity="0.04" />
+  <circle cx="250" cy="315" r="220" fill="none" stroke="#F5C518" stroke-width="1.5" opacity="0.06" />
+  <circle cx="250" cy="315" r="160" fill="none" stroke="#F5C518" stroke-width="1.5" opacity="0.08" />
+
+  <!-- Left: The Vilakku Mark (centered at 250, 315, scaled 0.75 of 480x480) -->
+  <g transform="translate(70, 135) scale(0.75)">
+    <!-- Subtle arc behind the lamp -->
+    <path d="M 170,235 A 72,72 0 0,0 310,235" fill="none" stroke="#F5C518" stroke-width="2" opacity="0.25"/>
+    
+    <!-- Stars in arc above flame -->
+    <circle cx="240" cy="50" r="4" fill="#F5C518" opacity="0.4"/>
+    <circle cx="210" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+    <circle cx="270" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+
+    <!-- Flame Assembly -->
+    <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z" fill="#F07020"/>
+    <path d="M 240,210 C 195,210 195,150 240,100 C 285,150 285,210 240,210 Z" fill="#F5C518"/>
+    <path d="M 240,200 C 210,200 210,160 240,120 C 270,160 270,200 240,200 Z" fill="#FFFDE0" opacity="0.9"/>
+
+    <!-- Oil Bowl -->
+    <ellipse cx="240" cy="230" rx="52" ry="22" fill="#F5C518"/>
+    <ellipse cx="240" cy="228" rx="40" ry="16" fill="#C88010"/>
+
+    <!-- Stem -->
+    <rect x="230" y="252" width="20" height="38" rx="8" fill="#E8A820"/>
+
+    <!-- Base -->
+    <path d="M200,330 L170,390 L310,390 L280,330 Z" fill="#F5C518"/>
+    <rect x="160" y="390" width="160" height="18" rx="6" fill="#C88010"/>
+
+    <!-- Book Pages Accent Overlay -->
+    <path d="M 160,396 Q 240,388 240,402 Q 240,388 320,396 L 320,408 Q 240,400 240,414 Q 240,400 160,408 Z" fill="#FFFDE0" opacity="0.95"/>
+  </g>
+
+  <!-- Right: Typography & Copy -->
+  <g transform="translate(480, 0)">
+    <!-- Small Category Label -->
+    <text x="0" y="160" class="badge-text">TAMIL NADU EXAM PREPARATION</text>
+    
+    <!-- Bold Main Title -->
+    <text x="0" y="235" class="bold-title">TNPSC Group 4 Master</text>
+    
+    <!-- Gold Year -->
+    <text x="0" y="355" class="gold-year">2026</text>
+    
+    <!-- Core Features bullet points -->
+    <text x="0" y="430" class="feature-text">10,000+ Questions  •  AI Study Assistant  •  Mock Tests</text>
+    
+    <!-- Small subtext/motto -->
+    <text x="0" y="475" font-family="sans-serif" font-size="18" font-style="italic" fill="#FFFFFF" opacity="0.5">Your complete pathway to government service success.</text>
+  </g>
+
+  <!-- Bottom Brand Slogan -->
+  <text x="1140" y="580" font-family="sans-serif" font-weight="700" font-size="18" fill="#F5C518" text-anchor="end" letter-spacing="0.1em">TAMIL NADU'S #1 EXAM PREP APP</text>
+
+  <!-- Bottom Decorative Accent Strip -->
+  <rect x="0" y="618" width="1200" height="12" fill="url(#accent-grad)" />
+</svg>

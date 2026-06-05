@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="100%" height="100%">
+  <!-- Subtle arc behind the lamp -->
+  <path d="M 170,235 A 72,72 0 0,0 310,235" fill="none" stroke="#F5C518" stroke-width="2" opacity="0.25"/>
+  
+  <!-- Stars in arc above flame -->
+  <circle cx="240" cy="50" r="4" fill="#F5C518" opacity="0.4"/>
+  <circle cx="210" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+  <circle cx="270" cy="58" r="4" fill="#F5C518" opacity="0.4"/>
+
+  <!-- Flame Assembly -->
+  <!-- Outer Flame (Orange) -->
+  <path d="M 240,220 C 180,220 180,140 240,80 C 300,140 300,220 240,220 Z" fill="#F07020"/>
+  <!-- Inner Flame (Gold) -->
+  <path d="M 240,210 C 195,210 195,150 240,100 C 285,150 285,210 240,210 Z" fill="#F5C518"/>
+  <!-- Core Flame (Warm White) -->
+  <path d="M 240,200 C 210,200 210,160 240,120 C 270,160 270,200 240,200 Z" fill="#FFFDE0" opacity="0.9"/>
+
+  <!-- Oil Bowl -->
+  <ellipse cx="240" cy="230" rx="52" ry="22" fill="#F5C518"/>
+  <ellipse cx="240" cy="228" rx="40" ry="16" fill="#C88010"/>
+
+  <!-- Neck / Stem -->
+  <rect x="230" y="252" width="20" height="38" rx="8" fill="#E8A820"/>
+
+  <!-- Lamp Base & Stand -->
+  <path d="M200,330 L170,390 L310,390 L280,330 Z" fill="#F5C518"/>
+  <path d="M205,330 L200,350 L280,350 L275,330 Z" fill="#FFFDE0" opacity="0.2"/>
+  <rect x="160" y="390" width="160" height="18" rx="6" fill="#C88010"/>
+
+  <!-- Book Pages Accent Overlay -->
+  <path d="M 160,396 Q 240,388 240,402 Q 240,388 320,396 L 320,408 Q 240,400 240,414 Q 240,400 160,408 Z" fill="#FFFDE0" opacity="0.95"/>
+</svg>

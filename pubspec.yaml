@@ -1,5 +1,5 @@
-name: tnpsc_group4_master
-description: "TNPSC Group 4 Master 2026 - Tamil Nadu's #1 TNPSC Exam Preparation App"
+name: thiral_app
+description: Thiral — Tamil Nadu's #1 TNPSC Group 4 exam prep app. 10,000+ questions, AI study assistant, mock tests, and current affairs.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -26,6 +26,7 @@ dependencies:
 
   # Navigation
   go_router: ^15.1.2
+  app_links: ^6.1.1
 
   # Network
   dio: ^5.7.0
@@ -90,6 +91,9 @@ dev_dependencies:
   riverpod_generator: ^2.6.3
   build_runner: ^2.4.15
   json_serializable: ^6.9.4
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.0
+  image: ^4.3.0
 
 flutter:
   uses-material-design: true
@@ -97,5 +101,6 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/logos/
     - assets/lottie/
     - assets/fonts/

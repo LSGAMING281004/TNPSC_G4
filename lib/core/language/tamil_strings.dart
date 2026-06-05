@@ -1,7 +1,10 @@
 import 'app_strings.dart';
 
 class TamilStrings extends AppStrings {
-  @override String get appName => 'TNPSC குரூப் 4 மாஸ்டர் 2026';
+  @override String get appName => 'திறல்';
+  @override String get appFullName => 'திறல் — தேர்வு மேலாண்மை 2026';
+  @override String get appTagline => 'திறல் பெறு · வெற்றி அடை';
+  @override String get welcomeTo => 'திறல்-க்கு வரவேற்கிறோம்';
   @override String get loading => 'ஏற்றுகிறது...';
   @override String get error => 'பிழை';
   @override String get retry => 'மீண்டும் முயற்சி';

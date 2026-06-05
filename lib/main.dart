@@ -10,6 +10,7 @@ import 'firebase_options.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'core/router/deep_link_service.dart';
 import 'core/language/language.dart';
 import 'core/services/audio_handler.dart';
 import 'core/services/push_notification_service.dart';
@@ -79,11 +80,32 @@ Future<void> _openHiveBoxes() async {
   await Hive.openBox(AppConstants.notificationsBox);
 }
 
-class TNPSCApp extends ConsumerWidget {
+class TNPSCApp extends ConsumerStatefulWidget {
   const TNPSCApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TNPSCApp> createState() => _TNPSCAppState();
+}
+
+class _TNPSCAppState extends ConsumerState<TNPSCApp> {
+  final _deepLinkService = DeepLinkService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _deepLinkService.init(context);
+    });
+  }
+
+  @override
+  void dispose() {
+    _deepLinkService.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final isDarkMode = ref.watch(isDarkModeProvider);
     final langMode = ref.watch(languageNotifierProvider);
@@ -95,7 +117,7 @@ class TNPSCApp extends ConsumerWidget {
     final fontFamily = langMode == LanguageMode.tamil ? tamilFontFamily : null;
 
     return MaterialApp.router(
-      title: AppConstants.appName,
+      title: 'Thiral',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme.copyWith(
         textTheme: AppTheme.lightTheme.textTheme.apply(fontFamily: fontFamily),

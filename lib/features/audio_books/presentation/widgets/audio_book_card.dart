@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/language/language_provider.dart';
 import '../../../../shared/models/audio_book_model.dart';
-import '../../data/audio_book_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// A card for a single audio book in the list.

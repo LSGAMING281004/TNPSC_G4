@@ -2,6 +2,9 @@
 abstract class AppStrings {
   // General
   String get appName;
+  String get appFullName;
+  String get appTagline;
+  String get welcomeTo;
   String get loading;
   String get error;
   String get retry;

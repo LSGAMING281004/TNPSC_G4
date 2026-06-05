@@ -185,7 +185,7 @@ class _AddEditAudioBookScreenState
                         title: const Text('Premium Content'),
                         subtitle: const Text('Only for PRO users'),
                         value: _isPremium,
-                        activeColor: AdminTheme.saffron,
+                        activeThumbColor: AdminTheme.saffron,
                         onChanged: (v) => setState(() => _isPremium = v),
                       ),
                     ),
@@ -194,7 +194,7 @@ class _AddEditAudioBookScreenState
                         title: const Text('Active / Published'),
                         subtitle: const Text('Visible to users'),
                         value: _isActive,
-                        activeColor: AdminTheme.success,
+                        activeThumbColor: AdminTheme.success,
                         onChanged: (v) => setState(() => _isActive = v),
                       ),
                     ),
@@ -278,7 +278,7 @@ class _AddEditAudioBookScreenState
 
   Widget _buildSubjectDropdown() {
     return DropdownButtonFormField<String>(
-      value: _subject,
+      initialValue: _subject,
       decoration: InputDecoration(
         labelText: 'Subject',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

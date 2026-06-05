@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../shared/models/audio_book_model.dart';
 import '../../../../core/services/audio_handler.dart';
 import 'package:audio_service/audio_service.dart';
 import '../../data/audio_book_providers.dart';

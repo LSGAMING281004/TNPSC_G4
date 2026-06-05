@@ -17,8 +17,6 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
   int _currentQuestion = 0;
   final Map<int, int> _answers = {};
   final Set<int> _markedForReview = {};
-  late int _remainingSeconds;
-  late Timer _timer;
   final int _totalQuestions = 10; // Demo: 10 questions
 
   final List<Map<String, dynamic>> _questions = List.generate(10, (i) => {
@@ -28,27 +26,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
     'correct': (i % 4),
   });
 
-  @override
-  void initState() {
-    super.initState();
-    _remainingSeconds = 90 * 60; // 90 minutes
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_remainingSeconds > 0) {
-        setState(() => _remainingSeconds--);
-      } else {
-        _submitTest();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
   void _submitTest() {
-    _timer.cancel();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -70,16 +48,9 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
     );
   }
 
-  String _formatTime(int seconds) {
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final q = _questions[_currentQuestion];
-    final isTimeLow = _remainingSeconds < 300;
 
     return PopScope(
       canPop: false,
@@ -102,22 +73,9 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
           ),
           title: Text('Q ${_currentQuestion + 1}/$_totalQuestions'),
           actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isTimeLow ? AppColors.error.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.timer, size: 18, color: isTimeLow ? AppColors.error : Colors.white),
-                  const SizedBox(width: 4),
-                  Text(_formatTime(_remainingSeconds),
-                    style: TextStyle(color: isTimeLow ? AppColors.error : Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ],
-              ),
+            _TestCountdownTimer(
+              initialSeconds: 90 * 60,
+              onTimeUp: _submitTest,
             ),
             IconButton(
               icon: const Icon(Icons.grid_view),
@@ -324,6 +282,85 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],
+    );
+  }
+}
+
+class _TestCountdownTimer extends StatefulWidget {
+  final int initialSeconds;
+  final VoidCallback onTimeUp;
+
+  const _TestCountdownTimer({
+    required this.initialSeconds,
+    required this.onTimeUp,
+  });
+
+  @override
+  State<_TestCountdownTimer> createState() => _TestCountdownTimerState();
+}
+
+class _TestCountdownTimerState extends State<_TestCountdownTimer> {
+  late int _secondsLeft;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _secondsLeft = widget.initialSeconds;
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (_secondsLeft > 0) {
+          setState(() => _secondsLeft--);
+        } else {
+          _timer?.cancel();
+          widget.onTimeUp();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTimeLow = _secondsLeft < 300;
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: isTimeLow
+            ? AppColors.error.withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer, size: 18, color: isTimeLow ? AppColors.error : Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            _formatTime(_secondsLeft),
+            style: TextStyle(
+              color: isTimeLow ? AppColors.error : Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/language/language_provider.dart';
 import '../../../../shared/models/audio_book_model.dart';
 import '../../../../shared/widgets/bilingual_text.dart';
@@ -52,7 +53,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
       id: book.id,
       album: book.subject,
       title: book.titleEn,
-      artist: book.narrator.isNotEmpty ? book.narrator : "TNPSC Master",
+      artist: book.narrator.isNotEmpty ? book.narrator : AppConstants.appName,
       artUri: book.coverImageUrl != null ? Uri.parse(book.coverImageUrl!) : null,
       extras: {'bookId': book.id},
     );
@@ -221,7 +222,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            '${book.subject} • ${book.narrator.isNotEmpty ? book.narrator : "TNPSC Master"}',
+            '${book.subject} • ${book.narrator.isNotEmpty ? book.narrator : AppConstants.appName}',
             style: TextStyle(
                 color: Colors.white.withOpacity(0.5), fontSize: 13),
           ),

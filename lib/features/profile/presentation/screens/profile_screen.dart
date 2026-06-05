@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/providers/app_providers.dart';
@@ -37,7 +38,7 @@ class ProfileScreen extends ConsumerWidget {
                         backgroundColor: AppColors.accentSaffron,
                         backgroundImage: user?.photoURL != null &&
                                 user!.photoURL!.isNotEmpty
-                            ? NetworkImage(user.photoURL!)
+                            ? CachedNetworkImageProvider(user.photoURL!)
                             : null,
                         child: (user?.photoURL == null ||
                                 user!.photoURL!.isEmpty)
