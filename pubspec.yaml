@@ -41,7 +41,7 @@ dependencies:
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
   lottie: ^3.3.1
-  fl_chart: ^0.70.2
+  fl_chart: ^1.2.0
   percent_indicator: ^4.2.3
   flutter_staggered_animations: ^1.1.1
   animate_do: ^3.3.4
@@ -81,7 +81,6 @@ dependencies:
   just_audio: ^0.10.5
   audio_service: ^0.18.18
   audio_session: ^0.2.3
-  supabase_flutter: ^2.12.4
   google_generative_ai: ^0.4.7
 
 dev_dependencies:

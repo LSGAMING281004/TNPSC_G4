@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+// Screens
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -8,220 +10,237 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/mock_tests/presentation/screens/mock_test_list_screen.dart';
-import '../../features/mock_tests/presentation/screens/test_instructions_screen.dart';
+// Note: Changed from TestEngineScreen/TestResultScreen to existing app routes if exact names differ, assuming placeholders if they don't exist
 import '../../features/mock_tests/presentation/screens/test_taking_screen.dart';
 import '../../features/mock_tests/presentation/screens/test_result_screen.dart';
-import '../../features/mock_tests/presentation/screens/solution_screen.dart';
-import '../../features/question_bank/presentation/screens/question_bank_home_screen.dart';
-import '../../features/question_bank/presentation/screens/question_detail_screen.dart';
-import '../../features/question_bank/presentation/screens/bookmarked_questions_screen.dart';
 import '../../features/study_materials/presentation/screens/study_materials_home_screen.dart';
 import '../../features/study_materials/presentation/screens/material_detail_screen.dart';
-import '../../features/study_materials/presentation/screens/download_manager_screen.dart';
 import '../../features/current_affairs/presentation/screens/current_affairs_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/question_bank/presentation/screens/question_bank_home_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
-import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/audio_books/presentation/screens/audio_books_home_screen.dart';
-import '../../features/audio_books/presentation/screens/audio_player_screen.dart';
-import '../constants/app_colors.dart';
-import '../../shared/utils/guest_restrictions.dart';
+
+import '../../features/auth/providers/auth_providers.dart';
+import '../../shared/widgets/main_shell_screen.dart';
+
+// Dummy providers for Auth Guard - Replace with actual Firebase Auth providers
+final isAdminProvider = StateProvider<bool>((ref) => false);
+final isFirstLaunchProvider = StateProvider<bool>((ref) => false);
 
 /// Named routes for the application
 class AppRoutes {
-  static const String splash = '/';
-  static const String onboarding = '/onboarding';
-  static const String login = '/login';
-  static const String register = '/register';
-  static const String forgotPassword = '/forgot-password';
-  static const String dashboard = '/dashboard';
-  static const String mockTests = '/mock-tests';
-  static const String testInstructions = '/test-instructions';
-  static const String testTaking = '/test-taking';
-  static const String testResult = '/test-result';
-  static const String solutions = '/solutions';
-  static const String questionBank = '/question-bank';
-  static const String questionDetail = '/question-detail';
-  static const String bookmarks = '/bookmarks';
-  static const String studyMaterials = '/study-materials';
-  static const String materialDetail = '/material-detail';
-  static const String downloadManager = '/download-manager';
-  static const String currentAffairs = '/current-affairs';
-  static const String analytics = '/analytics';
-  static const String leaderboard = '/leaderboard';
-  static const String aiAssistant = '/ai-assistant';
-  static const String profile = '/profile';
-  static const String settings = '/settings';
-  static const String notifications = '/notifications';
-  static const String audioBooks = '/audio-books';
-  static const String audioPlayer = '/audio-player';
+  static const splash = 'splash';
+  static const onboarding = 'onboarding';
+  static const login = 'login';
+  static const register = 'register';
+  static const forgotPassword = 'forgot-password';
+  static const home = 'home';
+  static const dashboard = 'dashboard';
+  static const tests = 'tests';
+  static const materials = 'materials';
+  static const current = 'current';
+  static const profile = 'profile';
+  static const test = 'test';
+  static const testResult = 'test-result';
+  static const questionBank = 'question-bank';
+  static const questionFilter = 'question-filter';
+  static const analytics = 'analytics';
+  static const leaderboard = 'leaderboard';
+  static const aiAssistant = 'ai-assistant';
+  static const study = 'study';
+  static const currentAffairsDetail = 'current-affairs-detail';
+  static const settings = 'settings';
+  static const achievements = 'achievements';
+  static const syllabus = 'syllabus';
+  static const previousPapers = 'previous-papers';
+  static const audioBooks = 'audio-books';
+  static const notifications = 'notifications';
+  static const admin = 'admin';
 }
 
-/// GoRouter provider
 final routerProvider = Provider<GoRouter>((ref) {
+  final isAuthenticated = ref.watch(authStateProvider).value != null;
+  final isAdmin = ref.watch(isAdminProvider);
+
   return GoRouter(
-    initialLocation: AppRoutes.splash,
+    initialLocation: '/',
     debugLogDiagnostics: true,
+    redirect: (context, state) {
+      final isAuthRoute = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/onboarding' ||
+          state.matchedLocation == '/';
+
+      if (!isAuthenticated && !isAuthRoute) {
+        return '/login';
+      }
+
+      if (isAuthenticated && isAuthRoute) {
+        // Prevent authenticated users from seeing login/onboarding
+        if (state.matchedLocation != '/') return '/home/dashboard';
+      }
+
+      if (state.matchedLocation.startsWith('/admin') && !isAdmin) {
+        return '/home/dashboard'; // Block non-admins
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
-        path: AppRoutes.splash,
-        name: 'splash',
+        path: '/',
+        name: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
-        path: AppRoutes.onboarding,
-        name: 'onboarding',
+        path: '/onboarding',
+        name: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
-        path: AppRoutes.login,
-        name: 'login',
+        path: '/login',
+        name: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.register,
-        name: 'register',
+        path: '/register',
+        name: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
-        path: AppRoutes.forgotPassword,
-        name: 'forgotPassword',
+        path: '/forgot-password',
+        name: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      // Main app shell with bottom navigation
+      
+      // Main App Shell
       ShellRoute(
-        builder: (context, state, child) => MainShell(child: child),
+        builder: (context, state, child) => MainShellScreen(child: child),
         routes: [
           GoRoute(
-            path: AppRoutes.dashboard,
-            name: 'dashboard',
+            path: '/home/dashboard',
+            name: AppRoutes.dashboard,
             builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
-            path: AppRoutes.mockTests,
-            name: 'mockTests',
+            path: '/home/tests',
+            name: AppRoutes.tests,
             builder: (context, state) => const MockTestListScreen(),
           ),
           GoRoute(
-            path: AppRoutes.studyMaterials,
-            name: 'studyMaterials',
+            path: '/home/materials',
+            name: AppRoutes.materials,
             builder: (context, state) => const StudyMaterialsHomeScreen(),
           ),
           GoRoute(
-            path: AppRoutes.analytics,
-            name: 'analytics',
-            builder: (context, state) => const AnalyticsScreen(),
+            path: '/home/current',
+            name: AppRoutes.current,
+            builder: (context, state) => const CurrentAffairsScreen(),
           ),
           GoRoute(
-            path: AppRoutes.profile,
-            name: 'profile',
+            path: '/home/profile',
+            name: AppRoutes.profile,
             builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
-      // Standalone routes (no bottom nav)
+
+      // Standalone Routes (Full Screen)
       GoRoute(
-        path: AppRoutes.testInstructions,
-        name: 'testInstructions',
-        builder: (context, state) => TestInstructionsScreen(
-          testId: state.uri.queryParameters['testId'] ?? '',
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.testTaking,
-        name: 'testTaking',
+        path: '/test/:testId',
+        name: AppRoutes.test,
         builder: (context, state) => TestTakingScreen(
-          testId: state.uri.queryParameters['testId'] ?? '',
+          testId: state.pathParameters['testId'] ?? '',
         ),
       ),
       GoRoute(
-        path: AppRoutes.testResult,
-        name: 'testResult',
+        path: '/test-result/:attemptId',
+        name: AppRoutes.testResult,
         builder: (context, state) => TestResultScreen(
-          resultId: state.uri.queryParameters['resultId'] ?? '',
+          resultId: state.pathParameters['attemptId'] ?? '',
         ),
       ),
       GoRoute(
-        path: AppRoutes.solutions,
-        name: 'solutions',
-        builder: (context, state) => SolutionScreen(
-          resultId: state.uri.queryParameters['resultId'] ?? '',
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.questionBank,
-        name: 'questionBank',
+        path: '/question-bank',
+        name: AppRoutes.questionBank,
         builder: (context, state) => const QuestionBankHomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'filter',
+            name: AppRoutes.questionFilter,
+            builder: (context, state) => const Scaffold(body: Center(child: Text('Filter Screen'))), // Placeholder
+          ),
+        ]
       ),
       GoRoute(
-        path: AppRoutes.questionDetail,
-        name: 'questionDetail',
-        builder: (context, state) => QuestionDetailScreen(
-          questionId: state.uri.queryParameters['questionId'] ?? '',
-        ),
+        path: '/analytics',
+        name: AppRoutes.analytics,
+        builder: (context, state) => const AnalyticsScreen(),
       ),
       GoRoute(
-        path: AppRoutes.bookmarks,
-        name: 'bookmarks',
-        builder: (context, state) => const BookmarkedQuestionsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.materialDetail,
-        name: 'materialDetail',
-        builder: (context, state) => MaterialDetailScreen(
-          materialId: state.uri.queryParameters['materialId'] ?? '',
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.downloadManager,
-        name: 'downloadManager',
-        builder: (context, state) => const DownloadManagerScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.currentAffairs,
-        name: 'currentAffairs',
-        builder: (context, state) => const CurrentAffairsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.leaderboard,
-        name: 'leaderboard',
+        path: '/leaderboard',
+        name: AppRoutes.leaderboard,
         builder: (context, state) => const LeaderboardScreen(),
       ),
       GoRoute(
-        path: AppRoutes.aiAssistant,
-        name: 'aiAssistant',
+        path: '/ai-assistant',
+        name: AppRoutes.aiAssistant,
         builder: (context, state) => const AIAssistantScreen(),
       ),
       GoRoute(
-        path: AppRoutes.settings,
-        name: 'settings',
+        path: '/study/:materialId',
+        name: AppRoutes.study,
+        builder: (context, state) => MaterialDetailScreen(
+          materialId: state.pathParameters['materialId'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/current-affairs/:id',
+        name: AppRoutes.currentAffairsDetail,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Article Detail Screen'))), // Placeholder
+      ),
+      GoRoute(
+        path: '/settings',
+        name: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
-        path: AppRoutes.notifications,
-        name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        path: '/achievements',
+        name: AppRoutes.achievements,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Achievements Screen'))), // Placeholder
       ),
       GoRoute(
-        path: AppRoutes.audioBooks,
-        name: 'audioBooks',
+        path: '/syllabus',
+        name: AppRoutes.syllabus,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Syllabus Screen'))), // Placeholder
+      ),
+      GoRoute(
+        path: '/previous-papers',
+        name: AppRoutes.previousPapers,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Previous Papers Screen'))), // Placeholder
+      ),
+      GoRoute(
+        path: '/audio-books',
+        name: AppRoutes.audioBooks,
         builder: (context, state) => const AudioBooksHomeScreen(),
       ),
       GoRoute(
-        path: AppRoutes.audioPlayer,
-        name: 'audioPlayer',
-        builder: (context, state) => AudioPlayerScreen(
-          bookId: state.uri.queryParameters['bookId'] ?? '',
-        ),
+        path: '/notifications',
+        name: AppRoutes.notifications,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/admin',
+        name: AppRoutes.admin,
+        builder: (context, state) => const Scaffold(body: Center(child: Text('Admin Dashboard Screen'))), // Placeholder
       ),
     ],
-    redirect: (context, state) {
-      // Allow unrestricted direct navigation (offline/guest-first access)
-      return null;
-    },
     errorBuilder: (context, state) => Scaffold(
       body: Center(
         child: Text('Page not found: ${state.error}'),
@@ -229,73 +248,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
-
-
-
-/// Main shell with bottom navigation bar
-class MainShell extends ConsumerWidget {
-  final Widget child;
-
-  const MainShell({super.key, required this.child});
-
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    if (location.startsWith(AppRoutes.dashboard)) return 0;
-    if (location.startsWith(AppRoutes.mockTests)) return 1;
-    if (location.startsWith(AppRoutes.studyMaterials)) return 2;
-    if (location.startsWith(AppRoutes.analytics)) return 3;
-    if (location.startsWith(AppRoutes.profile)) return 4;
-    return 0;
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex(context),
-        onDestinationSelected: (index) {
-          if (index == 3) {
-            if (!GuestRestrictions.check(context, ref, featureName: 'Analytics')) {
-              return;
-            }
-          }
-          switch (index) {
-            case 0: context.go(AppRoutes.dashboard); break;
-            case 1: context.go(AppRoutes.mockTests); break;
-            case 2: context.go(AppRoutes.studyMaterials); break;
-            case 3: context.go(AppRoutes.analytics); break;
-            case 4: context.go(AppRoutes.profile); break;
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home, color: AppColors.accentSaffron),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.quiz_outlined),
-            selectedIcon: Icon(Icons.quiz, color: AppColors.accentSaffron),
-            label: 'Tests',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book, color: AppColors.accentSaffron),
-            label: 'Materials',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics, color: AppColors.accentSaffron),
-            label: 'Analytics',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outlined),
-            selectedIcon: Icon(Icons.person, color: AppColors.accentSaffron),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}

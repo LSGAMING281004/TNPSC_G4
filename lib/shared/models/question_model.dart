@@ -1,100 +1,75 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-/// Question model with bilingual support
 class QuestionModel {
   final String id;
+  final String questionTamil;
+  final String questionEnglish;
+  final List<String> optionsTamil;
+  final List<String> optionsEnglish;
+  final int correctOptionIndex;
+  final String explanationTamil;
+  final String explanationEnglish;
   final String subject;
-  final String chapter;
   final String topic;
-  final String questionTa;
-  final String questionEn;
-  final List<OptionModel> options;
-  final String correctOptionId;
-  final String explanationTa;
-  final String explanationEn;
+  final String chapter;
   final String difficulty;
-  final int? year;
-  final String? imageUrl;
+  final int year;
   final List<String> tags;
+  final bool isVerified;
 
-  const QuestionModel({
+  QuestionModel({
     required this.id,
+    required this.questionTamil,
+    required this.questionEnglish,
+    required this.optionsTamil,
+    required this.optionsEnglish,
+    required this.correctOptionIndex,
+    required this.explanationTamil,
+    required this.explanationEnglish,
     required this.subject,
-    required this.chapter,
     required this.topic,
-    required this.questionTa,
-    required this.questionEn,
-    required this.options,
-    required this.correctOptionId,
-    required this.explanationTa,
-    required this.explanationEn,
+    required this.chapter,
     required this.difficulty,
-    this.year,
-    this.imageUrl,
-    this.tags = const [],
+    required this.year,
+    required this.tags,
+    required this.isVerified,
   });
 
-  factory QuestionModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory QuestionModel.fromMap(Map<String, dynamic> map, String id) {
     return QuestionModel(
-      id: doc.id,
-      subject: data['subject'] ?? '',
-      chapter: data['chapter'] ?? '',
-      topic: data['topic'] ?? '',
-      questionTa: data['questionTa'] ?? '',
-      questionEn: data['questionEn'] ?? '',
-      options: (data['options'] as List<dynamic>?)
-              ?.map((o) => OptionModel.fromMap(o as Map<String, dynamic>))
-              .toList() ?? [],
-      correctOptionId: data['correctOptionId'] ?? '',
-      explanationTa: data['explanationTa'] ?? '',
-      explanationEn: data['explanationEn'] ?? '',
-      difficulty: data['difficulty'] ?? 'medium',
-      year: data['year'],
-      imageUrl: data['imageUrl'],
-      tags: List<String>.from(data['tags'] ?? []),
-    );
-  }
-
-  Map<String, dynamic> toFirestore() => {
-    'subject': subject, 'chapter': chapter, 'topic': topic,
-    'questionTa': questionTa, 'questionEn': questionEn,
-    'options': options.map((o) => o.toMap()).toList(),
-    'correctOptionId': correctOptionId,
-    'explanationTa': explanationTa, 'explanationEn': explanationEn,
-    'difficulty': difficulty, 'year': year, 'imageUrl': imageUrl, 'tags': tags,
-  };
-
-  Map<String, dynamic> toMap() => toFirestore()..['id'] = id;
-
-  factory QuestionModel.fromMap(Map<String, dynamic> map) {
-    return QuestionModel(
-      id: map['id'] ?? '', subject: map['subject'] ?? '',
-      chapter: map['chapter'] ?? '', topic: map['topic'] ?? '',
-      questionTa: map['questionTa'] ?? '', questionEn: map['questionEn'] ?? '',
-      options: (map['options'] as List<dynamic>?)
-              ?.map((o) => OptionModel.fromMap(o as Map<String, dynamic>))
-              .toList() ?? [],
-      correctOptionId: map['correctOptionId'] ?? '',
-      explanationTa: map['explanationTa'] ?? '',
-      explanationEn: map['explanationEn'] ?? '',
+      id: id,
+      questionTamil: map['questionTamil'] ?? '',
+      questionEnglish: map['questionEnglish'] ?? '',
+      optionsTamil: List<String>.from(map['optionsTamil'] ?? []),
+      optionsEnglish: List<String>.from(map['optionsEnglish'] ?? []),
+      correctOptionIndex: map['correctOptionIndex']?.toInt() ?? 0,
+      explanationTamil: map['explanationTamil'] ?? '',
+      explanationEnglish: map['explanationEnglish'] ?? '',
+      subject: map['subject'] ?? '',
+      topic: map['topic'] ?? '',
+      chapter: map['chapter'] ?? '',
       difficulty: map['difficulty'] ?? 'medium',
-      year: map['year'], imageUrl: map['imageUrl'],
+      year: map['year']?.toInt() ?? 0,
       tags: List<String>.from(map['tags'] ?? []),
+      isVerified: map['isVerified'] ?? false,
     );
   }
-}
 
-class OptionModel {
-  final String id;
-  final String textTa;
-  final String textEn;
-
-  const OptionModel({required this.id, required this.textTa, required this.textEn});
-
-  factory OptionModel.fromMap(Map<String, dynamic> map) => OptionModel(
-    id: map['id'] ?? '', textTa: map['textTa'] ?? '', textEn: map['textEn'] ?? '',
-  );
-
-  Map<String, dynamic> toMap() => {'id': id, 'textTa': textTa, 'textEn': textEn};
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'questionTamil': questionTamil,
+      'questionEnglish': questionEnglish,
+      'optionsTamil': optionsTamil,
+      'optionsEnglish': optionsEnglish,
+      'correctOptionIndex': correctOptionIndex,
+      'explanationTamil': explanationTamil,
+      'explanationEnglish': explanationEnglish,
+      'subject': subject,
+      'topic': topic,
+      'chapter': chapter,
+      'difficulty': difficulty,
+      'year': year,
+      'tags': tags,
+      'isVerified': isVerified,
+    };
+  }
 }

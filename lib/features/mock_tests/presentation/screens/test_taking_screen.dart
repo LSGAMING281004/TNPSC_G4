@@ -1,332 +1,200 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/router/app_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../../../shared/models/question_model.dart';
+import '../../providers/test_providers.dart';
 
 class TestTakingScreen extends ConsumerStatefulWidget {
   final String testId;
+
   const TestTakingScreen({super.key, required this.testId});
 
   @override
   ConsumerState<TestTakingScreen> createState() => _TestTakingScreenState();
 }
 
-class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
-  int _currentQuestion = 0;
-  final Map<int, int> _answers = {};
-  final Set<int> _markedForReview = {};
-  final int _totalQuestions = 10; // Demo: 10 questions
+class _TestTakingScreenState extends ConsumerState<TestTakingScreen> with WidgetsBindingObserver {
+  late Timer _timer;
+  late Timer _saveTimer;
+  int _secondsRemaining = 90 * 60; // Default 90 mins, should be fetched
+  bool _isTamil = true;
+  int _currentIndex = 0;
+  List<QuestionModel> _questions = [];
+  Map<int, int> _answers = {}; // index -> selectedOptionIndex
+  Set<int> _bookmarked = {};
+  bool _isLoading = true;
+  bool _isPaused = false;
 
-  final List<Map<String, dynamic>> _questions = List.generate(10, (i) => {
-    'question': 'Sample question ${i + 1}: Which of the following is correct regarding the Tamil Nadu state administration?',
-    'questionTa': 'மாதிரி கேள்வி ${i + 1}: தமிழ்நாடு மாநில நிர்வாகம் குறித்த பின்வருவனவற்றில் எது சரியானது?',
-    'options': ['Option A - First choice', 'Option B - Second choice', 'Option C - Third choice', 'Option D - Fourth choice'],
-    'correct': (i % 4),
-  });
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadTest();
+  }
 
-  void _submitTest() {
+  Future<void> _loadTest() async {
+    // In real app, fetch test details to get actual duration
+    final questions = await ref.read(testQuestionsProvider(widget.testId).future);
+    
+    if (!mounted) return;
+    
+    setState(() {
+      _questions = questions;
+      _isLoading = false;
+    });
+
+    ref.read(activeTestProvider.notifier).startTest('currentUser', widget.testId, questions.length);
+
+    _startTimer();
+    _startAutoSave();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isPaused) return;
+      
+      setState(() {
+        if (_secondsRemaining > 0) {
+          _secondsRemaining--;
+          
+          // Warnings
+          if (_secondsRemaining == 10 * 60) _showWarning('10 minutes remaining!');
+          if (_secondsRemaining == 5 * 60) _showWarning('5 minutes remaining!');
+          if (_secondsRemaining == 1 * 60) _showWarning('1 minute remaining! Hurry up!');
+        } else {
+          _timer.cancel();
+          _submitTest();
+        }
+      });
+    });
+  }
+
+  void _startAutoSave() {
+    _saveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (_isPaused) return;
+      // In real app, save _answers to Hive here
+    });
+  }
+
+  void _showWarning(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer.cancel();
+    _saveTimer.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _isPaused = true;
+    } else if (state == AppLifecycleState.resumed) {
+      _isPaused = false;
+    }
+  }
+
+  Future<void> _submitTest() async {
+    _timer.cancel();
+    _saveTimer.cancel();
+    
+    // Process answers into ActiveTestNotifier
+    for (var entry in _answers.entries) {
+      final q = _questions[entry.key];
+      final isCorrect = entry.value == q.correctOptionIndex;
+      ref.read(activeTestProvider.notifier).updateAnswer(
+        q.id, entry.value, isCorrect, 60, q.subject // mock 60s time spent
+      );
+    }
+
+    final totalTimeTaken = (90 * 60) - _secondsRemaining;
+    await ref.read(activeTestProvider.notifier).submitTest(totalTimeTaken);
+
+    if (!mounted) return;
+    final attemptId = ref.read(activeTestProvider)!.id;
+    context.replace('/test-result/$attemptId');
+  }
+
+  void _confirmSubmit() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Submit Test?'),
-        content: Text('Answered: ${_answers.length}/$_totalQuestions\nMarked for Review: ${_markedForReview.length}'),
+        content: Text('You have answered ${_answers.length} out of ${_questions.length} questions. Are you sure you want to submit?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              context.go('${AppRoutes.testResult}?resultId=demo');
+              Navigator.pop(ctx);
+              _submitTest();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentSaffron),
-            child: const Text('Submit', style: TextStyle(color: Colors.white)),
+            child: const Text('Submit'),
           ),
         ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final q = _questions[_currentQuestion];
-
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.primaryNavy,
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Quit Test?'),
-                content: const Text('Your progress will be lost.'),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Continue')),
-                  TextButton(onPressed: () { Navigator.pop(ctx); context.go(AppRoutes.mockTests); }, child: const Text('Quit', style: TextStyle(color: AppColors.error))),
-                ],
-              ),
-            ),
-          ),
-          title: Text('Q ${_currentQuestion + 1}/$_totalQuestions'),
-          actions: [
-            _TestCountdownTimer(
-              initialSeconds: 90 * 60,
-              onTimeUp: _submitTest,
-            ),
-            IconButton(
-              icon: const Icon(Icons.grid_view),
-              onPressed: () => _showQuestionPalette(),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Progress bar
-            LinearProgressIndicator(
-              value: (_currentQuestion + 1) / _totalQuestions,
-              backgroundColor: Colors.grey.shade200,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentSaffron),
-              minHeight: 3,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Question text
-                    Text(q['question'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.5)),
-                    const SizedBox(height: 8),
-                    Text(q['questionTa'], style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.grey, height: 1.5)),
-                    const SizedBox(height: 24),
-                    // Options
-                    ...List.generate(4, (i) {
-                      final isSelected = _answers[_currentQuestion] == i;
-                      final labels = ['A', 'B', 'C', 'D'];
-                      return GestureDetector(
-                        onTap: () => setState(() => _answers[_currentQuestion] = i),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.accentSaffron.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected ? AppColors.accentSaffron : Colors.grey.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36, height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isSelected ? AppColors.accentSaffron : Colors.grey.shade200,
-                                ),
-                                child: Center(
-                                  child: Text(labels[i], style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : Colors.grey.shade600,
-                                  )),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(child: Text(q['options'][i], style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal))),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-            // Bottom actions
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
-              ),
-              child: Row(
-                children: [
-                  if (_currentQuestion > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => setState(() => _currentQuestion--),
-                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                        child: const Text('Previous'),
-                      ),
-                    ),
-                  if (_currentQuestion > 0) const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => setState(() {
-                        if (_markedForReview.contains(_currentQuestion)) {
-                          _markedForReview.remove(_currentQuestion);
-                        } else {
-                          _markedForReview.add(_currentQuestion);
-                        }
-                      }),
-                      icon: Icon(
-                        _markedForReview.contains(_currentQuestion) ? Icons.bookmark : Icons.bookmark_border,
-                        size: 18,
-                      ),
-                      label: const Text('Review', style: TextStyle(fontSize: 13)),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        foregroundColor: AppColors.markedForReview,
-                        side: const BorderSide(color: AppColors.markedForReview),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_currentQuestion < _totalQuestions - 1) {
-                          setState(() => _currentQuestion++);
-                        } else {
-                          _submitTest();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentSaffron,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(
-                        _currentQuestion < _totalQuestions - 1 ? 'Next' : 'Submit',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showQuestionPalette() {
+  void _showQuestionMap() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Question Palette', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            // Legend
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _LegendItem(color: AppColors.answered, label: 'Answered'),
-                _LegendItem(color: AppColors.unanswered, label: 'Unanswered'),
-                _LegendItem(color: AppColors.markedForReview, label: 'Review'),
-                _LegendItem(color: AppColors.currentQuestion, label: 'Current'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8, runSpacing: 8,
-              children: List.generate(_totalQuestions, (i) {
-                Color bg;
-                if (i == _currentQuestion) {
-                  bg = AppColors.currentQuestion;
-                } else if (_markedForReview.contains(i)) {
-                  bg = AppColors.markedForReview;
-                } else if (_answers.containsKey(i)) {
-                  bg = AppColors.answered;
-                } else {
-                  bg = AppColors.unanswered;
-                }
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, controller) => GridView.builder(
+          padding: const EdgeInsets.all(24),
+          controller: controller,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: _questions.length,
+          itemBuilder: (context, index) {
+            final isAnswered = _answers.containsKey(index);
+            final isBookmarked = _bookmarked.contains(index);
+            final isCurrent = index == _currentIndex;
 
-                return GestureDetector(
-                  onTap: () { setState(() => _currentQuestion = i); Navigator.pop(context); },
-                  child: Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
-                    child: Center(child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-          ],
+            Color bgColor = Colors.grey.shade200;
+            Color textColor = Colors.black;
+
+            if (isAnswered) {
+              bgColor = const Color(0xFF2ECC71); // Green
+              textColor = Colors.white;
+            }
+            if (isBookmarked) {
+              bgColor = const Color(0xFFE74C3C); // Red
+              textColor = Colors.white;
+            }
+
+            return InkWell(
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() => _currentIndex = index);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                  border: isCurrent ? Border.all(color: Theme.of(context).colorScheme.primary, width: 3) : null,
+                ),
+                alignment: Alignment.center,
+                child: Text('${index + 1}', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+              ),
+            );
+          },
         ),
       ),
     );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _LegendItem({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11)),
-      ],
-    );
-  }
-}
-
-class _TestCountdownTimer extends StatefulWidget {
-  final int initialSeconds;
-  final VoidCallback onTimeUp;
-
-  const _TestCountdownTimer({
-    required this.initialSeconds,
-    required this.onTimeUp,
-  });
-
-  @override
-  State<_TestCountdownTimer> createState() => _TestCountdownTimerState();
-}
-
-class _TestCountdownTimerState extends State<_TestCountdownTimer> {
-  late int _secondsLeft;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _secondsLeft = widget.initialSeconds;
-    _startTimer();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        if (_secondsLeft > 0) {
-          setState(() => _secondsLeft--);
-        } else {
-          _timer?.cancel();
-          widget.onTimeUp();
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   String _formatTime(int seconds) {
@@ -337,29 +205,202 @@ class _TestCountdownTimerState extends State<_TestCountdownTimer> {
 
   @override
   Widget build(BuildContext context) {
-    final isTimeLow = _secondsLeft < 300;
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isTimeLow
-            ? AppColors.error.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.timer, size: 18, color: isTimeLow ? AppColors.error : Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            _formatTime(_secondsLeft),
-            style: TextStyle(
-              color: isTimeLow ? AppColors.error : Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final question = _questions[_currentIndex];
+    final isDangerTime = _secondsRemaining < 5 * 60;
+
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Text('${_currentIndex + 1}/${_questions.length}', style: const TextStyle(fontSize: 18)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDangerTime ? Colors.red.withValues(alpha: 0.1) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: isDangerTime ? Colors.red : Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.timer_outlined, size: 18, color: isDangerTime ? Colors.red : Colors.black),
+                  const SizedBox(width: 6),
+                  Text(
+                    _formatTime(_secondsRemaining),
+                    style: TextStyle(
+                      color: isDangerTime ? Colors.red : Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const Spacer(),
+            IconButton(
+              icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+              onPressed: () {
+                setState(() => _isPaused = !_isPaused);
+              },
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4.0),
+          child: LinearProgressIndicator(
+            value: (_currentIndex + 1) / _questions.length,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
           ),
-        ],
+        ),
+      ),
+      body: _isPaused 
+          ? const Center(child: Text('Test Paused', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)))
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Text('English'),
+                      Switch(
+                        value: _isTamil,
+                        onChanged: (val) => setState(() => _isTamil = val),
+                        activeColor: Theme.of(context).colorScheme.primary,
+                      ),
+                      const Text('தமிழ்'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isTamil ? question.questionTamil : question.questionEnglish,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(height: 1.5),
+                        ),
+                        const SizedBox(height: 32),
+                        ...List.generate(4, (optionIndex) {
+                          final isSelected = _answers[_currentIndex] == optionIndex;
+                          final optionText = _isTamil ? question.optionsTamil[optionIndex] : question.optionsEnglish[optionIndex];
+                          final label = String.fromCharCode(65 + optionIndex); // A, B, C, D
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _answers[_currentIndex] = optionIndex;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 32,
+                                      height: 32,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade100,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.white : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        optionText,
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), offset: const Offset(0, -4), blurRadius: 10)],
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    if (_bookmarked.contains(_currentIndex)) {
+                      _bookmarked.remove(_currentIndex);
+                    } else {
+                      _bookmarked.add(_currentIndex);
+                    }
+                  });
+                },
+                icon: Icon(
+                  _bookmarked.contains(_currentIndex) ? Icons.bookmark : Icons.bookmark_border,
+                  color: _bookmarked.contains(_currentIndex) ? const Color(0xFFE74C3C) : Colors.grey.shade600,
+                ),
+              ),
+              IconButton(
+                onPressed: _showQuestionMap,
+                icon: const Icon(Icons.grid_view),
+              ),
+              const Spacer(),
+              if (_currentIndex > 0)
+                OutlinedButton(
+                  onPressed: () => setState(() => _currentIndex--),
+                  child: const Text('Previous'),
+                ),
+              const SizedBox(width: 12),
+              if (_currentIndex < _questions.length - 1)
+                ElevatedButton(
+                  onPressed: () => setState(() => _currentIndex++),
+                  child: const Text('Next'),
+                )
+              else
+                ElevatedButton(
+                  onPressed: _confirmSubmit,
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2ECC71)),
+                  child: const Text('Submit Test'),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

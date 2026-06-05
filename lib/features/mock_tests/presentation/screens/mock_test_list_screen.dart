@@ -1,214 +1,154 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../shared/providers/firestore_providers.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../../../shared/models/mock_test_model.dart';
+import '../../providers/test_providers.dart';
 
-class MockTestListScreen extends ConsumerWidget {
+class MockTestListScreen extends ConsumerStatefulWidget {
   const MockTestListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Mock Tests'),
-          backgroundColor: AppColors.primaryNavy,
-          bottom: const TabBar(
-            isScrollable: true,
-            indicatorColor: AppColors.accentSaffron,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            tabs: [
-              Tab(text: 'Full Test'),
-              Tab(text: 'Subject'),
-              Tab(text: 'Chapter'),
-              Tab(text: 'Daily'),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            _TestList(type: 'full'),
-            _TestList(type: 'subject'),
-            _TestList(type: 'chapter'),
-            _TestList(type: 'daily'),
+  ConsumerState<MockTestListScreen> createState() => _MockTestListScreenState();
+}
+
+class _MockTestListScreenState extends ConsumerState<MockTestListScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mock Tests'),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Theme.of(context).colorScheme.primary,
+          tabs: const [
+            Tab(text: 'Full Tests\n(100Q/90m)'),
+            Tab(text: 'Subject Tests\n(50Q/45m)'),
+            Tab(text: 'Chapter Tests\n(25Q/20m)'),
+            Tab(text: 'Daily Quiz\n(10Q/10m)'),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _TestListTab(testType: 'full'),
+          _TestListTab(testType: 'subject'),
+          _TestListTab(testType: 'chapter'),
+          _TestListTab(testType: 'daily'),
+        ],
       ),
     );
   }
 }
 
-class _TestList extends ConsumerWidget {
-  final String type;
-  const _TestList({required this.type});
+class _TestListTab extends ConsumerWidget {
+  final String testType;
+
+  const _TestListTab({required this.testType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final testsAsync = ref.watch(mockTestsStreamProvider(type));
+    final testsAsync = ref.watch(testListProvider(testType));
 
     return testsAsync.when(
-      loading: () => const Center(
-          child: CircularProgressIndicator(
-              strokeWidth: 2, color: AppColors.accentSaffron)),
-      error: (e, _) => Center(
-          child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.grey, size: 48),
-          const SizedBox(height: 12),
-          Text('Error loading tests', style: TextStyle(color: Colors.grey.shade600)),
-        ],
-      )),
       data: (tests) {
         if (tests.isEmpty) {
-          return Center(
-              child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.quiz_outlined, color: Colors.grey.shade300, size: 64),
-              const SizedBox(height: 12),
-              Text('No tests available yet',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
-              const SizedBox(height: 4),
-              Text('Tests will appear here once added by admin',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
-            ],
-          ));
+          return const Center(child: Text('No tests available in this category yet.'));
         }
-
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: tests.length,
           itemBuilder: (context, index) {
             final test = tests[index];
-            final title =
-                (test['title'] as String?) ?? 'Mock Test ${index + 1}';
-            final questions = test['totalQuestions'] ?? test['questions'] ?? 0;
-            final duration = test['durationMinutes'] ?? test['duration'] ?? 0;
-            final difficulty =
-                (test['difficulty'] as String?) ?? 'medium';
-
             return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: InkWell(
-                onTap: () => context.push(
-                    '${AppRoutes.testInstructions}?testId=${test['id']}'),
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentSaffron
-                                  .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              type == 'full'
-                                  ? Icons.assignment
-                                  : type == 'daily'
-                                      ? Icons.bolt
-                                      : Icons.quiz,
-                              color: AppColors.accentSaffron,
-                              size: 24,
-                            ),
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            test.nameEnglish,
+                            style: Theme.of(context).textTheme.titleLarge,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(title,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15)),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    _InfoChip(
-                                        icon: Icons.quiz,
-                                        label: '$questions Qs'),
-                                    const SizedBox(width: 8),
-                                    _InfoChip(
-                                        icon: Icons.timer,
-                                        label: '$duration min'),
-                                    const SizedBox(width: 8),
-                                    _DifficultyChip(difficulty: difficulty),
-                                  ],
-                                ),
-                              ],
-                            ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          const Icon(Icons.chevron_right, color: Colors.grey),
-                        ],
-                      ),
-                      if (test['subject'] != null) ...[
-                        const SizedBox(height: 8),
-                        Text('Subject: ${test['subject']}',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600)),
+                          child: Text(
+                            'Hard', // Example static difficulty
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
+                          ),
+                        ),
                       ],
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(test.nameTamil, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(Icons.help_outline, size: 16, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text('${test.questionCount} Qs', style: Theme.of(context).textTheme.bodySmall),
+                        const SizedBox(width: 16),
+                        Icon(Icons.timer_outlined, size: 16, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text('${test.durationMinutes} mins', style: Theme.of(context).textTheme.bodySmall),
+                        const Spacer(),
+                        ElevatedButton(
+                          onPressed: () => context.push('/test/${test.id}'),
+                          child: const Text('Start Test'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             );
           },
         );
       },
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _InfoChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: Colors.grey.shade500),
-        const SizedBox(width: 3),
-        Text(label,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-      ],
-    );
-  }
-}
-
-class _DifficultyChip extends StatelessWidget {
-  final String difficulty;
-  const _DifficultyChip({required this.difficulty});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = difficulty == 'easy'
-        ? AppColors.difficultyEasy
-        : difficulty == 'hard'
-            ? AppColors.difficultyHard
-            : AppColors.difficultyMedium;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(4)),
-      child: Text(difficulty.toUpperCase(),
-          style: TextStyle(
-              fontSize: 9, fontWeight: FontWeight.bold, color: color)),
+      loading: () => ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: 4,
+        itemBuilder: (context, index) => Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            height: 120,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+      ),
+      error: (e, _) => Center(child: Text('Error loading tests: $e')),
     );
   }
 }

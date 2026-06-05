@@ -1,292 +1,422 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/models/question_model.dart';
+import '../../providers/question_bank_providers.dart';
 
 class QuestionBankHomeScreen extends ConsumerStatefulWidget {
   const QuestionBankHomeScreen({super.key});
 
   @override
-  ConsumerState<QuestionBankHomeScreen> createState() =>
-      _QuestionBankHomeScreenState();
+  ConsumerState<QuestionBankHomeScreen> createState() => _QuestionBankHomeScreenState();
 }
 
-class _QuestionBankHomeScreenState
-    extends ConsumerState<QuestionBankHomeScreen> {
-  String _selectedSubject = 'All';
-  String _selectedDifficulty = 'All';
-  final _searchController = TextEditingController();
+class _QuestionBankHomeScreenState extends ConsumerState<QuestionBankHomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool _isTamil = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        ref.read(questionListProvider.notifier).loadMore();
+      }
+    });
+
+    _searchController.addListener(() {
+      ref.read(questionFilterProvider.notifier).updateQuery(_searchController.text);
+      ref.read(questionListProvider.notifier).refresh();
+    });
+  }
 
   @override
   void dispose() {
+    _tabController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => const _FilterSheet(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final questionsAsync = ref.watch(questionsStreamProvider((
-      subject: _selectedSubject,
-      difficulty: _selectedDifficulty,
-      search: _searchController.text,
-    )));
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Question Bank'),
-        backgroundColor: AppColors.primaryNavy,
         actions: [
+          Row(
+            children: [
+              const Text('EN', style: TextStyle(fontSize: 12)),
+              Switch(
+                value: _isTamil,
+                onChanged: (val) => setState(() => _isTamil = val),
+              ),
+              const Text('TA', style: TextStyle(fontSize: 12)),
+              const SizedBox(width: 8),
+            ],
+          ),
           IconButton(
-              icon: const Icon(Icons.bookmark),
-              onPressed: () => context.push(AppRoutes.bookmarks)),
+            icon: const Icon(Icons.filter_list),
+            onPressed: _showFilterSheet,
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(110),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search questions... / தேடுக...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'All Questions'),
+                  Tab(text: 'Bookmarks'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _AllQuestionsTab(scrollController: _scrollController, isTamil: _isTamil),
+          _BookmarksTab(isTamil: _isTamil),
         ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
+    );
+  }
+}
+
+class _AllQuestionsTab extends ConsumerWidget {
+  final ScrollController scrollController;
+  final bool isTamil;
+
+  const _AllQuestionsTab({required this.scrollController, required this.isTamil});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final questionsAsync = ref.watch(questionListProvider);
+
+    return questionsAsync.when(
+      data: (questions) {
+        if (questions.isEmpty) {
+          return const Center(child: Text('No questions found matching your criteria.'));
+        }
+        return RefreshIndicator(
+          onRefresh: () async {
+            ref.read(questionListProvider.notifier).refresh();
+          },
+          child: ListView.builder(
+            controller: scrollController,
             padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search questions...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
+            itemCount: questions.length + 1, // +1 for loading indicator
+            itemBuilder: (context, index) {
+              if (index == questions.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return _QuestionCard(question: questions[index], isTamil: isTamil, index: index + 1);
+            },
           ),
-          // Filters
-          SizedBox(
-            height: 40,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+    );
+  }
+}
+
+class _BookmarksTab extends ConsumerWidget {
+  final bool isTamil;
+
+  const _BookmarksTab({required this.isTamil});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bookmarksAsync = ref.watch(bookmarkedQuestionsProvider);
+
+    return bookmarksAsync.when(
+      data: (questions) {
+        if (questions.isEmpty) {
+          return const Center(child: Text('You have no saved bookmarks.'));
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: questions.length,
+          itemBuilder: (context, index) {
+            return _QuestionCard(question: questions[index], isTamil: isTamil, index: index + 1);
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+    );
+  }
+}
+
+class _QuestionCard extends ConsumerWidget {
+  final QuestionModel question;
+  final bool isTamil;
+  final int index;
+
+  const _QuestionCard({required this.question, required this.isTamil, required this.index});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bookmarkedIds = ref.watch(bookmarksProvider);
+    final isBookmarked = bookmarkedIds.contains(question.id);
+
+    final questionText = isTamil ? question.questionTamil : question.questionEnglish;
+    final options = isTamil ? question.optionsTamil : question.optionsEnglish;
+    final explanation = isTamil ? question.explanationTamil : question.explanationEnglish;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ExpansionTile(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                _FilterChip(
-                    label: 'All',
-                    selected: _selectedSubject == 'All',
-                    onTap: () =>
-                        setState(() => _selectedSubject = 'All')),
-                _FilterChip(
-                    label: 'Tamil',
-                    selected: _selectedSubject == 'Tamil',
-                    onTap: () =>
-                        setState(() => _selectedSubject = 'Tamil')),
-                _FilterChip(
-                    label: 'General Studies',
-                    selected: _selectedSubject == 'General Studies',
-                    onTap: () => setState(
-                        () => _selectedSubject = 'General Studies')),
-                _FilterChip(
-                    label: 'Aptitude',
-                    selected:
-                        _selectedSubject == 'Aptitude & Mental Ability',
-                    onTap: () => setState(() =>
-                        _selectedSubject = 'Aptitude & Mental Ability')),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    question.subject.replaceAll('_', ' ').toUpperCase(),
+                    style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+                  ),
+                ),
                 const SizedBox(width: 8),
-                _FilterChip(
-                    label: 'Easy',
-                    selected: _selectedDifficulty == 'Easy',
-                    onTap: () =>
-                        setState(() => _selectedDifficulty = 'Easy'),
-                    color: AppColors.difficultyEasy),
-                _FilterChip(
-                    label: 'Medium',
-                    selected: _selectedDifficulty == 'Medium',
-                    onTap: () =>
-                        setState(() => _selectedDifficulty = 'Medium'),
-                    color: AppColors.difficultyMedium),
-                _FilterChip(
-                    label: 'Hard',
-                    selected: _selectedDifficulty == 'Hard',
-                    onTap: () =>
-                        setState(() => _selectedDifficulty = 'Hard'),
-                    color: AppColors.difficultyHard),
+                if (question.year > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${question.year}',
+                      style: const TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: isBookmarked ? const Color(0xFFE74C3C) : Colors.grey),
+                  onPressed: () {
+                    ref.read(bookmarksProvider.notifier).toggleBookmark(question.id);
+                  },
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 8),
-          // Questions list
-          Expanded(
-            child: questionsAsync.when(
-              loading: () => const Center(
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.accentSaffron)),
-              error: (_, __) => const Center(
-                  child: Text('Error loading questions',
-                      style: TextStyle(color: Colors.grey))),
-              data: (questions) {
-                if (questions.isEmpty) {
-                  return Center(
-                      child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.quiz_outlined,
-                          color: Colors.grey.shade300, size: 64),
-                      const SizedBox(height: 12),
-                      Text('No questions found',
-                          style: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 16)),
-                    ],
-                  ));
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: questions.length,
-                  itemBuilder: (context, index) {
-                    final q = questions[index];
-                    final subject =
-                        (q['subject'] as String?) ?? 'General';
-                    final difficulty =
-                        (q['difficulty'] as String?) ?? 'medium';
-                    final questionText = (q['questionText'] as String?) ??
-                        (q['question'] as String?) ??
-                        'Question ${index + 1}';
-                    final chapter = (q['chapter'] as String?) ?? '';
-                    final subjectColor = _subjectColor(subject);
-                    final diffColor = _difficultyColor(difficulty);
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      child: InkWell(
-                        onTap: () => context.push(
-                            '${AppRoutes.questionDetail}?questionId=${q['id']}'),
-                        borderRadius: BorderRadius.circular(14),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                        color: subjectColor
-                                            .withValues(alpha: 0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(6)),
-                                    child: Text(subject,
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color: subjectColor)),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                        color: diffColor
-                                            .withValues(alpha: 0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(6)),
-                                    child: Text(difficulty.toUpperCase(),
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: diffColor)),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                      icon: Icon(Icons.bookmark_border,
-                                          size: 20,
-                                          color: Colors.grey.shade400),
-                                      onPressed: () {},
-                                      padding: EdgeInsets.zero,
-                                      constraints:
-                                          const BoxConstraints()),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                  'Q${index + 1}. $questionText',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis),
-                              if (chapter.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text('Chapter: $chapter',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade500)),
-                              ],
-                            ],
+            const SizedBox(height: 8),
+            Text(
+              'Q$index. $questionText',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ],
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...List.generate(4, (i) {
+                  final isCorrect = i == question.correctOptionIndex;
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isCorrect ? const Color(0xFF2ECC71).withValues(alpha: 0.1) : Colors.grey.shade50,
+                      border: Border.all(color: isCorrect ? const Color(0xFF2ECC71) : Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(String.fromCharCode(65 + i), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            options[i],
+                            style: TextStyle(
+                              color: isCorrect ? const Color(0xFF27AE60) : Colors.black87,
+                              fontWeight: isCorrect ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
+                        if (isCorrect) const Icon(Icons.check_circle, color: Color(0xFF2ECC71), size: 20),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+                if (explanation.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.lightbulb, color: Colors.amber, size: 18),
+                            SizedBox(width: 8),
+                            Text('Explanation', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(explanation, style: const TextStyle(fontSize: 13)),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-
-  Color _subjectColor(String subject) {
-    if (subject.contains('Tamil')) return AppColors.tamilSubject;
-    if (subject.contains('General')) return AppColors.gsSubject;
-    return AppColors.aptitudeSubject;
-  }
-
-  Color _difficultyColor(String d) {
-    switch (d.toLowerCase()) {
-      case 'easy':
-        return AppColors.difficultyEasy;
-      case 'hard':
-        return AppColors.difficultyHard;
-      default:
-        return AppColors.difficultyMedium;
-    }
-  }
 }
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color? color;
-  const _FilterChip(
-      {required this.label,
-      required this.selected,
-      required this.onTap,
-      this.color});
+class _FilterSheet extends ConsumerWidget {
+  const _FilterSheet();
 
   @override
-  Widget build(BuildContext context) {
-    final c = color ?? AppColors.accentSaffron;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: selected
-                ? c.withValues(alpha: 0.15)
-                : Colors.grey.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-                color: selected ? c : Colors.grey.shade300),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = ref.watch(questionFilterProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      height: MediaQuery.of(context).size.height * 0.7,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Filters', style: Theme.of(context).textTheme.headlineSmall),
+              TextButton(
+                onPressed: () {
+                  ref.read(questionFilterProvider.notifier).clearFilters();
+                  ref.read(questionListProvider.notifier).refresh();
+                  Navigator.pop(context);
+                },
+                child: const Text('Clear All'),
+              ),
+            ],
           ),
-          child: Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? c : Colors.grey.shade600)),
-        ),
+          const Divider(),
+          Expanded(
+            child: ListView(
+              children: [
+                const SizedBox(height: 16),
+                const Text('Subjects', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ['general_tamil', 'general_english', 'general_knowledge', 'aptitude', 'mental_ability'].map((s) {
+                    final isSelected = filter.subjects.contains(s);
+                    return FilterChip(
+                      label: Text(s.replaceAll('_', ' ').toUpperCase(), style: const TextStyle(fontSize: 12)),
+                      selected: isSelected,
+                      onSelected: (_) => ref.read(questionFilterProvider.notifier).toggleSubject(s),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+                
+                const Text('Difficulty', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: ['easy', 'medium', 'hard'].map((d) {
+                    final isSelected = filter.difficulties.contains(d);
+                    return FilterChip(
+                      label: Text(d.toUpperCase(), style: const TextStyle(fontSize: 12)),
+                      selected: isSelected,
+                      onSelected: (_) => ref.read(questionFilterProvider.notifier).toggleDifficulty(d),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+
+                const Text('Previous Year Papers', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [0, 2019, 2020, 2021, 2022, 2023, 2024].map((y) {
+                    final isSelected = filter.years.contains(y);
+                    return FilterChip(
+                      label: Text(y == 0 ? 'New Questions' : '$y', style: const TextStyle(fontSize: 12)),
+                      selected: isSelected,
+                      onSelected: (_) => ref.read(questionFilterProvider.notifier).toggleYear(y),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                ref.read(questionListProvider.notifier).refresh();
+                Navigator.pop(context);
+              },
+              child: const Text('Apply Filters'),
+            ),
+          ),
+        ],
       ),
     );
   }

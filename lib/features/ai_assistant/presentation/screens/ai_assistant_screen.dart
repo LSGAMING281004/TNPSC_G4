@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/config/secrets.dart';
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
@@ -30,13 +31,13 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   void initState() {
     super.initState();
     _model = GenerativeModel(
-      model: 'gemini-pro',
-      apiKey: 'AIzaSyBLBXUCIsQLIrxBLGKcfhpPGm94FaaEap8',
+      model: 'gemini-2.0-flash',
+      apiKey: AppSecrets.geminiApiKey,
     );
     
-    // For gemini-pro, system instructions are best provided as the first message in the chat history
+    // For Gemini, system instructions are best provided as the first message in the chat history
     _chat = _model.startChat(history: [
-      Content.text(AppConstants.claudeSystemPrompt),
+      Content.text(AppConstants.aiSystemPrompt),
       Content.model([TextPart('Understood. I am TamilBot, ready to help with TNPSC Group 4 preparation.')])
     ]);
   }

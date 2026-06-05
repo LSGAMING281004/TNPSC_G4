@@ -31,22 +31,6 @@ class DioClient {
 
   Dio get dio => _dio;
 
-  /// Claude API specific client
-  Dio get claudeClient {
-    final claudeDio = Dio(
-      BaseOptions(
-        baseUrl: AppConstants.claudeApiUrl,
-        connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 120),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': AppConstants.claudeApiKey,
-          'anthropic-version': '2023-06-01',
-        },
-      ),
-    );
-    return claudeDio;
-  }
 }
 
 /// Retry interceptor for failed requests

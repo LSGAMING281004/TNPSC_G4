@@ -1,194 +1,125 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// User model for TNPSC Group 4 Master 2026
 class UserModel {
   final String uid;
   final String name;
   final String email;
-  final String? photoURL;
-  final String district;
-  final int targetScore;
-  final int studyStreak;
-  final int totalPoints;
-  final int questionsAttempted;
-  final double accuracy;
+  final String? photoUrl;
+  final String? phoneNumber;
+  final String district;       // Tamil Nadu district
   final DateTime createdAt;
   final DateTime lastLoginAt;
+  final int totalScore;
+  final int testsAttempted;
+  final int currentStreak;     // days
+  final int longestStreak;
+  final Map<String, double> subjectScores; // subject → avg %
+  final List<String> achievements;
+  final bool isAnonymous;
   final bool isPremium;
-  final String language; // 'en', 'ta', 'both'
-  final bool isDarkMode;
-  final Map<String, dynamic>? fcmTokens;
+  final String? fcmToken;
 
-  const UserModel({
+  UserModel({
     required this.uid,
     required this.name,
     required this.email,
-    this.photoURL,
+    this.photoUrl,
+    this.phoneNumber,
     this.district = '',
-    this.targetScore = 150,
-    this.studyStreak = 0,
-    this.totalPoints = 0,
-    this.questionsAttempted = 0,
-    this.accuracy = 0.0,
     required this.createdAt,
     required this.lastLoginAt,
+    this.totalScore = 0,
+    this.testsAttempted = 0,
+    this.currentStreak = 0,
+    this.longestStreak = 0,
+    this.subjectScores = const {},
+    this.achievements = const [],
+    this.isAnonymous = false,
     this.isPremium = false,
-    this.language = 'both',
-    this.isDarkMode = false,
-    this.fcmTokens,
+    this.fcmToken,
   });
 
-  /// Create from Firestore document
-  factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return UserModel(
-      uid: doc.id,
-      name: data['name'] ?? '',
-      email: data['email'] ?? '',
-      photoURL: data['photoURL'],
-      district: data['district'] ?? '',
-      targetScore: data['targetScore'] ?? 150,
-      studyStreak: data['studyStreak'] ?? 0,
-      totalPoints: data['totalPoints'] ?? 0,
-      questionsAttempted: data['questionsAttempted'] ?? 0,
-      accuracy: (data['accuracy'] ?? 0.0).toDouble(),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastLoginAt: (data['lastLoginAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      isPremium: data['isPremium'] ?? false,
-      language: data['language'] ?? 'both',
-      isDarkMode: data['isDarkMode'] ?? false,
-      fcmTokens: data['fcmTokens'] as Map<String, dynamic>?,
-    );
-  }
-
-  /// Create from Map (for Hive local cache)
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      uid: map['uid'] ?? '',
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      photoURL: map['photoURL'],
-      district: map['district'] ?? '',
-      targetScore: map['targetScore'] ?? 150,
-      studyStreak: map['studyStreak'] ?? 0,
-      totalPoints: map['totalPoints'] ?? 0,
-      questionsAttempted: map['questionsAttempted'] ?? 0,
-      accuracy: (map['accuracy'] ?? 0.0).toDouble(),
-      createdAt: map['createdAt'] is Timestamp
-          ? (map['createdAt'] as Timestamp).toDate()
-          : DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
-      lastLoginAt: map['lastLoginAt'] is Timestamp
-          ? (map['lastLoginAt'] as Timestamp).toDate()
-          : DateTime.tryParse(map['lastLoginAt']?.toString() ?? '') ?? DateTime.now(),
-      isPremium: map['isPremium'] ?? false,
-      language: map['language'] ?? 'both',
-      isDarkMode: map['isDarkMode'] ?? false,
-      fcmTokens: map['fcmTokens'] as Map<String, dynamic>?,
-    );
-  }
-
-  /// Convert to Firestore document
-  Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'email': email,
-      'photoURL': photoURL,
-      'district': district,
-      'targetScore': targetScore,
-      'studyStreak': studyStreak,
-      'totalPoints': totalPoints,
-      'questionsAttempted': questionsAttempted,
-      'accuracy': accuracy,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'lastLoginAt': Timestamp.fromDate(lastLoginAt),
-      'isPremium': isPremium,
-      'language': language,
-      'isDarkMode': isDarkMode,
-      'fcmTokens': fcmTokens,
-    };
-  }
-
-  /// Convert to Map (for Hive local cache)
-  Map<String, dynamic> toMap() {
-    return {
-      'uid': uid,
-      'name': name,
-      'email': email,
-      'photoURL': photoURL,
-      'district': district,
-      'targetScore': targetScore,
-      'studyStreak': studyStreak,
-      'totalPoints': totalPoints,
-      'questionsAttempted': questionsAttempted,
-      'accuracy': accuracy,
-      'createdAt': createdAt.toIso8601String(),
-      'lastLoginAt': lastLoginAt.toIso8601String(),
-      'isPremium': isPremium,
-      'language': language,
-      'isDarkMode': isDarkMode,
-      'fcmTokens': fcmTokens,
-    };
-  }
-
-  /// Create a copy with updated fields
   UserModel copyWith({
     String? uid,
     String? name,
     String? email,
-    String? photoURL,
+    String? photoUrl,
+    String? phoneNumber,
     String? district,
-    int? targetScore,
-    int? studyStreak,
-    int? totalPoints,
-    int? questionsAttempted,
-    double? accuracy,
     DateTime? createdAt,
     DateTime? lastLoginAt,
+    int? totalScore,
+    int? testsAttempted,
+    int? currentStreak,
+    int? longestStreak,
+    Map<String, double>? subjectScores,
+    List<String>? achievements,
+    bool? isAnonymous,
     bool? isPremium,
-    String? language,
-    bool? isDarkMode,
-    Map<String, dynamic>? fcmTokens,
+    String? fcmToken,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
       name: name ?? this.name,
       email: email ?? this.email,
-      photoURL: photoURL ?? this.photoURL,
+      photoUrl: photoUrl ?? this.photoUrl,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       district: district ?? this.district,
-      targetScore: targetScore ?? this.targetScore,
-      studyStreak: studyStreak ?? this.studyStreak,
-      totalPoints: totalPoints ?? this.totalPoints,
-      questionsAttempted: questionsAttempted ?? this.questionsAttempted,
-      accuracy: accuracy ?? this.accuracy,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+      totalScore: totalScore ?? this.totalScore,
+      testsAttempted: testsAttempted ?? this.testsAttempted,
+      currentStreak: currentStreak ?? this.currentStreak,
+      longestStreak: longestStreak ?? this.longestStreak,
+      subjectScores: subjectScores ?? this.subjectScores,
+      achievements: achievements ?? this.achievements,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
       isPremium: isPremium ?? this.isPremium,
-      language: language ?? this.language,
-      isDarkMode: isDarkMode ?? this.isDarkMode,
-      fcmTokens: fcmTokens ?? this.fcmTokens,
+      fcmToken: fcmToken ?? this.fcmToken,
     );
   }
 
-  /// Empty user for initial state
-  static UserModel empty = UserModel(
-    uid: '',
-    name: '',
-    email: '',
-    createdAt: DateTime.now(),
-    lastLoginAt: DateTime.now(),
-  );
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'name': name,
+      'email': email,
+      'photoUrl': photoUrl,
+      'phoneNumber': phoneNumber,
+      'district': district,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'lastLoginAt': Timestamp.fromDate(lastLoginAt),
+      'totalScore': totalScore,
+      'testsAttempted': testsAttempted,
+      'currentStreak': currentStreak,
+      'longestStreak': longestStreak,
+      'subjectScores': subjectScores,
+      'achievements': achievements,
+      'isAnonymous': isAnonymous,
+      'isPremium': isPremium,
+      'fcmToken': fcmToken,
+    };
+  }
 
-  bool get isEmpty => uid.isEmpty;
-  bool get isNotEmpty => uid.isNotEmpty;
-
-  @override
-  String toString() => 'UserModel(uid: $uid, name: $name, email: $email)';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UserModel && runtimeType == other.runtimeType && uid == other.uid;
-
-  @override
-  int get hashCode => uid.hashCode;
+  factory UserModel.fromMap(Map<String, dynamic> map, String id) {
+    return UserModel(
+      uid: id,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      photoUrl: map['photoUrl'],
+      phoneNumber: map['phoneNumber'],
+      district: map['district'] ?? '',
+      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastLoginAt: (map['lastLoginAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      totalScore: map['totalScore']?.toInt() ?? 0,
+      testsAttempted: map['testsAttempted']?.toInt() ?? 0,
+      currentStreak: map['currentStreak']?.toInt() ?? 0,
+      longestStreak: map['longestStreak']?.toInt() ?? 0,
+      subjectScores: Map<String, double>.from(map['subjectScores'] ?? {}),
+      achievements: List<String>.from(map['achievements'] ?? []),
+      isAnonymous: map['isAnonymous'] ?? false,
+      isPremium: map['isPremium'] ?? false,
+      fcmToken: map['fcmToken'],
+    );
+  }
 }

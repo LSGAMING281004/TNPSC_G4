@@ -8,6 +8,7 @@ class AppConstants {
   static const String appFullName     = 'Thiral — TNPSC Group 4 Master 2026';
   static const String appTagline      = 'Master every skill. Crack every exam.';
   static const String appTaglineTamil = 'திறல் பெறு · வெற்றி அடை';
+  static const String packageId       = 'com.thiral.app';
   static const String bundleId        = 'com.thiral.app';
   static const String appDomain       = 'thiral.app';
   static const String appVersion      = '1.0.0';
@@ -18,9 +19,12 @@ class AppConstants {
   static const String termsUrl        = 'https://thiral.app/terms';
 
   // Exam Info
-  static final DateTime examDate = DateTime(2026, 9, 20); // Expected exam date
-  static const String examName = 'TNPSC Group IV & VAO';
+  static final DateTime examDate = DateTime(2026, 12, 15); // Update when official date released
+  static const DateTime examTargetDate = DateTime(2026, 12, 15);
+  static const String examName = 'TNPSC Group IV & VAO 2026';
   static const String examNameTamil = 'TNPSC குரூப் IV & VAO';
+  static const int totalQuestions = 100;
+  static const int examDurationMinutes = 90;
 
   // Test Configuration
   static const int fullMockQuestions = 100;
@@ -36,18 +40,8 @@ class AppConstants {
   static const double correctMark = 1.0;
   static const double wrongMark = -0.33;
 
-  // API Keys (Replace with actual keys)
-  static const String claudeApiKey = 'YOUR_CLAUDE_API_KEY';
-  static const String claudeApiUrl = 'https://api.anthropic.com/v1/messages';
-  static const String claudeModel = 'claude-sonnet-4-20250514';
-
-  // Supabase Config (For Storage)
-  static const String supabaseUrl = 'https://qgslvlywsjjjnuwrubzo.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnc2x2bHl3c2pqam51d3J1YnpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDkzMTgsImV4cCI6MjA5NjEyNTMxOH0.EPc_aw7YQivze_qUNEdVqQGlqr-vweOUbQR4QGN4530';
-  static const String supabaseMediaBucket = 'tnpsc-media';
-
-  // Claude System Prompt
-  static const String claudeSystemPrompt = '''
+  // AI System Prompt (Gemini)
+  static const String aiSystemPrompt = '''
 You are TamilBot, an expert TNPSC Group 4 exam coach. Answer in simple Tamil and English. 
 Focus on TNPSC syllabus topics. Keep answers exam-focused and concise. 
 When asked for practice questions, format them as numbered MCQs with options A/B/C/D.
@@ -78,6 +72,9 @@ Aptitude & Mental Ability.
   static const String testAttemptsCollection = 'test_attempts';
   static const String conversationsCollection = 'conversations';
   static const String quotesCollection = 'quotes';
+  static const String syllabusCollection = 'syllabus';
+  static const String previousPapersCollection = 'previous_papers';
+  static const String audioBooksCollection = 'audio_books';
 
   // Subjects
   static const List<String> subjects = ['Tamil', 'General Studies', 'Aptitude & Mental Ability'];
