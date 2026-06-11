@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
-import '../constants/app_constants.dart';
+
 
 /// Configured Dio client for API calls
 class DioClient {
@@ -27,6 +29,25 @@ class DioClient {
       ),
       _RetryInterceptor(_dio),
     ]);
+
+    _setupSecurityContext();
+  }
+
+  void _setupSecurityContext() {
+    final securityContext = SecurityContext(withTrustedRoots: true);
+    // Note: To enforce strict pinning, add the trusted PEM certificate:
+    // ByteData certBytes = await rootBundle.load('assets/certs/gemini.pem');
+    // securityContext.setTrustedCertificatesBytes(certBytes.buffer.asUint8List());
+
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        return HttpClient(context: securityContext)
+          ..badCertificateCallback = (X509Certificate cert, String host, int port) {
+            // Additional custom hash-based pinning could be added here
+            return false; // Reject all bad certificates
+          };
+      },
+    );
   }
 
   Dio get dio => _dio;

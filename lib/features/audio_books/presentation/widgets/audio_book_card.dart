@@ -27,22 +27,22 @@ class AudioBookCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isPlaying
-              ? AppColors.accentSaffron.withOpacity(0.08)
+              ? AppColors.accentSaffron.withValues(alpha: 0.08)
               : isDark
-                  ? Colors.grey.shade800
+                  ? const Color(0xFF152A4A)
                   : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isPlaying
                 ? AppColors.accentSaffron
                 : isDark
-                    ? Colors.grey.shade700
+                    ? const Color(0xFF1F324E)
                     : Colors.grey.shade200,
             width: isPlaying ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -56,16 +56,16 @@ class AudioBookCard extends StatelessWidget {
               child: Container(
                 width: 70,
                 height: 70,
-                color: AppColors.primaryNavy.withOpacity(0.1),
+                color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.primaryNavy.withValues(alpha: 0.1),
                 child: book.coverImageUrl != null &&
                         book.coverImageUrl!.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: book.coverImageUrl!,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => _coverPlaceholder(),
-                        errorWidget: (_, __, ___) => _coverPlaceholder(),
+                        placeholder: (_, __) => _coverPlaceholder(isDark),
+                        errorWidget: (_, __, ___) => _coverPlaceholder(isDark),
                       )
-                    : _coverPlaceholder(),
+                    : _coverPlaceholder(isDark),
               ),
             ),
             const SizedBox(width: 14),
@@ -89,7 +89,7 @@ class AudioBookCard extends StatelessWidget {
                       book.titleTa,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                         fontFamily: 'NotoSansTamil',
                       ),
                       maxLines: 1,
@@ -109,14 +109,14 @@ class AudioBookCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.amber.shade100,
+                            color: isDark ? Colors.amber.withValues(alpha: 0.2) : Colors.amber.shade100,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text('PRO',
                               style: TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.amber.shade800)),
+                                  color: isDark ? Colors.amber : Colors.amber.shade800)),
                         ),
                       ],
                     ],
@@ -136,17 +136,17 @@ class AudioBookCard extends StatelessWidget {
               )
             else
               Icon(Icons.play_circle_filled,
-                  color: AppColors.primaryNavy, size: 36),
+                  color: isDark ? Colors.white : AppColors.primaryNavy, size: 36),
           ],
         ),
       ),
     );
   }
 
-  Widget _coverPlaceholder() => Container(
-        color: AppColors.primaryNavy.withOpacity(0.08),
-        child: const Center(
-          child: Icon(Icons.headphones, color: AppColors.primaryNavy, size: 28),
+  Widget _coverPlaceholder(bool isDark) => Container(
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.primaryNavy.withValues(alpha: 0.08),
+        child: Center(
+          child: Icon(Icons.headphones, color: isDark ? Colors.white70 : AppColors.primaryNavy, size: 28),
         ),
       );
 

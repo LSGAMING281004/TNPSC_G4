@@ -8,17 +8,17 @@ class StudyMaterialsHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Study Materials'),
-          backgroundColor: AppColors.primaryNavy,
-          bottom: const TabBar(
+          bottom: TabBar(
             indicatorColor: AppColors.accentSaffron,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            tabs: [
+            labelColor: isDark ? Colors.white : AppColors.primaryNavy,
+            unselectedLabelColor: isDark ? Colors.white54 : Colors.grey.shade600,
+            tabs: const [
               Tab(text: 'Tamil'),
               Tab(text: 'General Studies'),
               Tab(text: 'Aptitude')
@@ -48,6 +48,7 @@ class _SubjectMaterialsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final materialsAsync = ref.watch(studyMaterialsStreamProvider(subject));
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return materialsAsync.when(
       loading: () => const Center(
           child: CircularProgressIndicator(
@@ -62,15 +63,15 @@ class _SubjectMaterialsList extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.menu_book_outlined,
-                  color: Colors.grey.shade300, size: 64),
+                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300, size: 64),
               const SizedBox(height: 12),
               Text('No materials available yet',
                   style:
-                      TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                      TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade500, fontSize: 16)),
               const SizedBox(height: 4),
               Text('Study materials will appear here once added',
                   style:
-                      TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+                      TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, fontSize: 13)),
             ],
           ));
         }

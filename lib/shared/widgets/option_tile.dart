@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../shared/models/question_model.dart';
 import 'bilingual_text.dart';
 
 /// Option tile for Mock Test and Question Bank.
 class OptionTile extends StatelessWidget {
-  final OptionModel option;
+  final String textTa;
+  final String textEn;
   final String optionLetter; // A / B / C / D
   final String contentLang;
   final bool isSelected;
@@ -15,7 +15,8 @@ class OptionTile extends StatelessWidget {
 
   const OptionTile({
     super.key,
-    required this.option,
+    required this.textTa,
+    required this.textEn,
     required this.optionLetter,
     required this.contentLang,
     required this.isSelected,
@@ -26,21 +27,22 @@ class OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color borderColor;
     final Color bgColor;
 
     if (isCorrect == true) {
-      borderColor = Colors.green.shade400;
-      bgColor = Colors.green.shade50;
+      borderColor = isDark ? Colors.green.shade600 : Colors.green.shade400;
+      bgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.2) : Colors.green.shade50;
     } else if (isWrong == true) {
-      borderColor = Colors.red.shade400;
-      bgColor = Colors.red.shade50;
+      borderColor = isDark ? Colors.red.shade600 : Colors.red.shade400;
+      bgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.2) : Colors.red.shade50;
     } else if (isSelected) {
-      borderColor = AppColors.primaryNavy;
-      bgColor = AppColors.primaryNavy.withOpacity(0.06);
+      borderColor = isDark ? AppColors.accentSaffron : AppColors.primaryNavy;
+      bgColor = isDark ? AppColors.accentSaffron.withValues(alpha: 0.08) : AppColors.primaryNavy.withValues(alpha: 0.06);
     } else {
-      borderColor = Colors.grey.shade300;
-      bgColor = Colors.white;
+      borderColor = isDark ? const Color(0xFF1F324E) : Colors.grey.shade300;
+      bgColor = isDark ? const Color(0xFF152A4A) : Colors.white;
     }
 
     return GestureDetector(
@@ -64,7 +66,7 @@ class OptionTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected || isCorrect == true || isWrong == true
                     ? borderColor
-                    : Colors.grey.shade200,
+                    : (isDark ? const Color(0xFF1F324E) : Colors.grey.shade200),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -74,8 +76,8 @@ class OptionTile extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                     color: isSelected || isCorrect == true || isWrong == true
-                        ? Colors.white
-                        : Colors.grey.shade700,
+                        ? (isDark && isSelected ? Colors.black87 : Colors.white)
+                        : (isDark ? Colors.grey.shade300 : Colors.grey.shade700),
                   ),
                 ),
               ),
@@ -84,8 +86,8 @@ class OptionTile extends StatelessWidget {
             // Option text
             Expanded(
               child: BilingualText(
-                tamilText: option.textTa,
-                englishText: option.textEn,
+                tamilText: textTa,
+                englishText: textEn,
                 contentLang: contentLang,
                 primaryStyle: const TextStyle(fontSize: 14),
                 secondaryStyle: const TextStyle(fontSize: 12),

@@ -101,7 +101,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.primaryNavy,
-                  AppColors.primaryNavy.withOpacity(0.85),
+                  AppColors.primaryNavy.withValues(alpha: 0.85),
                   const Color(0xFF0A1628),
                 ],
               ),
@@ -176,7 +176,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.accentSaffron.withOpacity(0.3),
+              color: AppColors.accentSaffron.withValues(alpha: 0.3),
               blurRadius: 40,
               spreadRadius: 5,
             ),
@@ -218,13 +218,13 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                 fontSize: 20,
                 fontWeight: FontWeight.bold),
             secondaryStyle: TextStyle(
-                color: Colors.white.withOpacity(0.6), fontSize: 15),
+                color: Colors.white.withValues(alpha: 0.6), fontSize: 15),
           ),
           const SizedBox(height: 8),
           Text(
             '${book.subject} • ${book.narrator.isNotEmpty ? book.narrator : AppConstants.appName}',
             style: TextStyle(
-                color: Colors.white.withOpacity(0.5), fontSize: 13),
+                color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
           ),
         ],
       ),
@@ -256,7 +256,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                       overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
                       activeTrackColor: AppColors.accentSaffron,
-                      inactiveTrackColor: Colors.white.withOpacity(0.15),
+                      inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
                       thumbColor: AppColors.accentSaffron,
                     ),
                     child: Slider(
@@ -274,10 +274,10 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
                       children: [
                         Text(_formatTime(position.inSeconds),
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.5), fontSize: 11)),
+                                color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
                         Text(_formatTime(duration.inSeconds),
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.5), fontSize: 11)),
+                                color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
                       ],
                     ),
                   ),
@@ -396,7 +396,7 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
         decoration: BoxDecoration(
           color: isActive
               ? AppColors.accentSaffron
-              : Colors.white.withOpacity(0.08),
+              : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

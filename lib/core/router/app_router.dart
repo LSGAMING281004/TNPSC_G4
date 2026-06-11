@@ -24,6 +24,12 @@ import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dar
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/audio_books/presentation/screens/audio_books_home_screen.dart';
+import '../../features/admin/widgets/admin_scaffold.dart';
+import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/admin/screens/admin_questions_screen.dart';
+import '../../features/admin/screens/admin_current_affairs_screen.dart';
+import '../../features/admin/screens/admin_users_screen.dart';
+import '../../features/admin/screens/admin_notifications_screen.dart';
 
 import '../../features/auth/providers/auth_providers.dart';
 import '../../shared/widgets/main_shell_screen.dart';
@@ -42,10 +48,14 @@ class AppRoutes {
   static const home = 'home';
   static const dashboard = 'dashboard';
   static const tests = 'tests';
+  static const mockTests = 'tests';
   static const materials = 'materials';
+  static const studyMaterials = 'materials';
   static const current = 'current';
+  static const currentAffairs = 'current';
   static const profile = 'profile';
   static const test = 'test';
+  static const testTaking = 'test';
   static const testResult = 'test-result';
   static const questionBank = 'question-bank';
   static const questionFilter = 'question-filter';
@@ -63,11 +73,14 @@ class AppRoutes {
   static const admin = 'admin';
 }
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(authStateProvider).value != null;
   final isAdmin = ref.watch(isAdminProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
@@ -235,10 +248,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.notifications,
         builder: (context, state) => const NotificationsScreen(),
       ),
-      GoRoute(
-        path: '/admin',
-        name: AppRoutes.admin,
-        builder: (context, state) => const Scaffold(body: Center(child: Text('Admin Dashboard Screen'))), // Placeholder
+      // Admin Routes (Web Only Shell)
+      ShellRoute(
+        builder: (context, state, child) => AdminScaffold(
+          currentLocation: state.matchedLocation,
+          child: child,
+        ),
+        routes: [
+          GoRoute(
+            path: '/admin',
+            name: AppRoutes.admin,
+            builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/admin/questions',
+            builder: (context, state) => const AdminQuestionsScreen(),
+          ),
+          GoRoute(
+            path: '/admin/current_affairs',
+            builder: (context, state) => const AdminCurrentAffairsScreen(),
+          ),
+          GoRoute(
+            path: '/admin/users',
+            builder: (context, state) => const AdminUsersScreen(),
+          ),
+          GoRoute(
+            path: '/admin/notifications',
+            builder: (context, state) => const AdminNotificationsScreen(),
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

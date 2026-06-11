@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../../../shared/models/test_attempt_model.dart';
-import '../../../../shared/models/question_model.dart';
 import '../../providers/test_providers.dart';
 
 class TestResultScreen extends ConsumerStatefulWidget {

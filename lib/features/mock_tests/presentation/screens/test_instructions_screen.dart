@@ -10,7 +10,7 @@ class TestInstructionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Test Instructions'), backgroundColor: AppColors.primaryNavy),
+      appBar: AppBar(title: const Text('Test Instructions')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -97,15 +97,16 @@ class _LangOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         color: isSelected ? AppColors.accentSaffron.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? AppColors.accentSaffron : Colors.grey.shade300, width: isSelected ? 2 : 1),
+        border: Border.all(color: isSelected ? AppColors.accentSaffron : (isDark ? Colors.grey.shade800 : Colors.grey.shade300), width: isSelected ? 2 : 1),
       ),
       child: Center(
-        child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: isSelected ? AppColors.accentSaffron : Colors.grey)),
+        child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: isSelected ? AppColors.accentSaffron : (isDark ? Colors.grey.shade400 : Colors.grey))),
       ),
     );
   }

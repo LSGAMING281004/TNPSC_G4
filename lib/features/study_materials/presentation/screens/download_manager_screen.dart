@@ -6,8 +6,9 @@ class DownloadManagerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Downloads'), backgroundColor: AppColors.primaryNavy),
+      appBar: AppBar(title: const Text('Downloads')),
       body: Column(
         children: [
           Container(
@@ -17,11 +18,11 @@ class DownloadManagerScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.storage, color: AppColors.info),
                 const SizedBox(width: 12),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Storage Used', style: TextStyle(fontWeight: FontWeight.w600)),
-                    Text('45 MB / 500 MB', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const Text('Storage Used', style: TextStyle(fontWeight: FontWeight.w600)),
+                    Text('45 MB / 500 MB', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey)),
                   ],
                 ),
                 const Spacer(),

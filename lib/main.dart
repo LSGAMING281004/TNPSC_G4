@@ -7,17 +7,22 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:thiral_app/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/app_providers.dart';
+import 'core/language/language_provider.dart';
+import 'core/language/language_mode.dart';
 import 'firebase_options.dart';
 import 'core/services/audio_handler.dart';
-import 'shared/providers/app_providers.dart' as shared_providers;
+import 'features/notifications/services/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
 }
 
 void main() async {
@@ -39,7 +44,9 @@ void main() async {
   );
 
   // Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Hive offline cache
@@ -55,12 +62,15 @@ void main() async {
   // Pre-load Noto Sans Tamil so Tamil mode renders immediately
   await GoogleFonts.pendingFonts([GoogleFonts.notoSansTamil()]);
 
+  // Initialize unified Notification Service (FCM & Local)
+  await NotificationService().init();
+
   FlutterNativeSplash.remove();
 
   runApp(
     ProviderScope(
       overrides: [
-        shared_providers.audioHandlerProvider.overrideWithValue(audioHandler),
+        audioHandlerProvider.overrideWithValue(audioHandler),
       ],
       child: const ThiralApp(),
     ),
@@ -70,7 +80,9 @@ void main() async {
 Future<void> _openHiveBoxes() async {
   await Hive.openBox('user_box');
   await Hive.openBox('settings');
+  await Hive.openBox('settings_box');
   await Hive.openBox('cached_questions');
+  await Hive.openBox('bookmarks');
   await Hive.openBox('bookmarks_box');
   await Hive.openBox('test_progress');
   await Hive.openBox('user_prefs');
@@ -113,6 +125,12 @@ class ThiralApp extends ConsumerWidget {
     // using routerProvider from app_router.dart
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final langMode = ref.watch(languageNotifierProvider);
+
+    Locale appLocale = const Locale('en', 'IN');
+    if (langMode == LanguageMode.tamil || langMode == LanguageMode.both) {
+      appLocale = const Locale('ta', 'IN');
+    }
 
     return MaterialApp.router(
       title: 'Thiral — TNPSC Group 4',
@@ -121,7 +139,9 @@ class ThiralApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
+      locale: appLocale,
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

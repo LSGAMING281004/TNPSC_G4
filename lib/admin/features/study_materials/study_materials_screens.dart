@@ -105,8 +105,6 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
   String _subject = 'Tamil', _chapter = '', _titleTa = '', _titleEn = '', _descTa = '', _descEn = '';
   PlatformFile? _file;
   bool _uploading = false;
-  double _progress = 0;
-
   @override
   void initState() {
     super.initState();
@@ -116,13 +114,13 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
+    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
     if (result != null && result.files.isNotEmpty) setState(() => _file = result.files.first);
   }
 
   Future<void> _upload() async {
     if (!_formKey.currentState!.validate() || _file == null) return;
-    setState(() { _uploading = true; _progress = 0; });
+    setState(() { _uploading = true; });
     try {
       final storagePath = '${AdminConstants.studyMaterialsPath}/$_subject/$_chapter/${DateTime.now().millisecondsSinceEpoch}.pdf';
       

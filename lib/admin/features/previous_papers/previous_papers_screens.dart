@@ -106,7 +106,7 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
   }
 
   Future<void> _pickPdf() async {
-    final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
+    final r = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
     if (r != null && r.files.isNotEmpty) setState(() => _pdf = r.files.first);
   }
 

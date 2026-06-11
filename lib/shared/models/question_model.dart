@@ -53,6 +53,10 @@ class QuestionModel {
     );
   }
 
+  factory QuestionModel.fromJson(Map<String, dynamic> json, [String? id]) => QuestionModel.fromMap(json, id ?? json['id'] ?? '');
+
+  Map<String, dynamic> toJson() => toMap();
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

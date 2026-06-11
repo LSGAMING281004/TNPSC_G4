@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) {
-  final box = Hive.box('settings');
+  final box = Hive.box('settings_box');
   final stored = box.get('themeMode', defaultValue: 'system') as String;
   return switch (stored) {
     'light' => ThemeMode.light,

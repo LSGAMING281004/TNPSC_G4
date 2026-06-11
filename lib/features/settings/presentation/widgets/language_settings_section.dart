@@ -14,18 +14,18 @@ class LanguageSettingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = ref.watch(languageNotifierProvider);
-    final s = context.s;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: Text(s.appLanguage,
+          child: Text(l10n.appLanguage,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600)),
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
         ),
         Card(
           shape:
@@ -66,12 +66,12 @@ class _LanguageOptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtitle = _subtitle(mode);
-    final color = _modeColor(mode);
+    final color = _modeColor(context, mode);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: isSelected ? color.withOpacity(0.06) : Colors.transparent,
+        color: isSelected ? color.withValues(alpha: 0.06) : Colors.transparent,
         borderRadius: BorderRadius.circular(14),
       ),
       child: ListTile(
@@ -95,7 +95,7 @@ class _LanguageOptionTile extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: isSelected ? color : Theme.of(context).colorScheme.onSurface)),
         subtitle: Text(subtitle,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
         trailing: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: 22,
@@ -103,7 +103,7 @@ class _LanguageOptionTile extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-                color: isSelected ? color : Colors.grey.shade400, width: 2),
+                color: isSelected ? color : (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade600 : Colors.grey.shade400), width: 2),
             color: isSelected ? color : Colors.transparent,
           ),
           child: isSelected
@@ -133,10 +133,11 @@ class _LanguageOptionTile extends StatelessWidget {
     }
   }
 
-  Color _modeColor(LanguageMode m) {
+  Color _modeColor(BuildContext context, LanguageMode m) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (m) {
       case LanguageMode.tamil:   return Colors.deepOrange;
-      case LanguageMode.english: return AppColors.primaryNavy;
+      case LanguageMode.english: return isDark ? Colors.blue.shade400 : AppColors.primaryNavy;
       case LanguageMode.both:    return Colors.teal;
     }
   }
@@ -163,16 +164,16 @@ class _LanguagePreviewCard extends StatelessWidget {
             style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5))),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade50,
+            color: isDark ? const Color(0xFF152A4A) : Colors.grey.shade50,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200),
+                color: isDark ? const Color(0xFF1F324E) : Colors.grey.shade200),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

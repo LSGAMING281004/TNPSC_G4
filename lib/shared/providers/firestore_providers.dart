@@ -25,7 +25,7 @@ final userProfileStreamProvider = StreamProvider<UserModel?>((ref) {
       .snapshots()
       .map((snap) {
     if (!snap.exists) return null;
-    final user = UserModel.fromFirestore(snap);
+    final user = UserModel.fromMap(snap.data() as Map<String, dynamic>, snap.id);
     // Keep the StateProvider in sync for backward compat
     ref.read(currentUserProvider.notifier).state = user;
     return user;

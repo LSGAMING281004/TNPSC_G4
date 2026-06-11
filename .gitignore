@@ -1,9 +1,18 @@
+# Android Keystore
+android/key.properties
+*.jks
+
 # Miscellaneous
 *.class
 *.log
 *.pyc
 *.swp
 .DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 .atom/
 .build/
 .buildlog/
@@ -27,11 +36,16 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
 /coverage/
+flutter_export_environment.sh
+
+# Node modules (Firebase Functions etc.)
+**/node_modules/
 
 # Symbolication related
 app.*.symbols
@@ -43,6 +57,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/build/
+/android/.gradle/
+/android/app/build/
+/android/captures/
+/android/local.properties
 
 # Secrets and Keys
 android/key.properties
@@ -58,6 +77,12 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
+
+# Firebase local emulator
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # Hardcoded keys and secrets files
 list_models.dart

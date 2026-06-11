@@ -25,7 +25,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    final box = Hive.box('settings');
+    final box = Hive.box('settings_box');
     final onboardingDone = box.get('onboarding_done', defaultValue: false) as bool;
     
     // Check if user is logged in via Riverpod provider

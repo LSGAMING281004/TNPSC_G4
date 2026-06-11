@@ -26,14 +26,13 @@ class AppBarWidget extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // watch so AppBar rebuilds when language changes
     ref.watch(languageNotifierProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppBar(
-      backgroundColor: AppColors.primaryNavy,
-      foregroundColor: Colors.white,
       leading: leading,
       title: Text(title,
-          style: const TextStyle(
-              fontSize: 17, fontWeight: FontWeight.w600, color: Colors.white)),
+          style: TextStyle(
+              fontSize: 17, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppColors.primaryNavy)),
       actions: [
         if (showLanguageToggle)
           Padding(

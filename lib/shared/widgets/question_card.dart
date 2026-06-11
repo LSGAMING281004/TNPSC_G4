@@ -11,7 +11,7 @@ import 'option_tile.dart';
 class QuestionCard extends ConsumerWidget {
   final QuestionModel question;
   final bool showAnswer;
-  final String? selectedOptionId;
+  final int? selectedOptionIndex;
   final VoidCallback? onBookmark;
   final VoidCallback? onRevealAnswer;
   final bool isBookmarked;
@@ -20,7 +20,7 @@ class QuestionCard extends ConsumerWidget {
     super.key,
     required this.question,
     this.showAnswer = false,
-    this.selectedOptionId,
+    this.selectedOptionIndex,
     this.onBookmark,
     this.onRevealAnswer,
     this.isBookmarked = false,
@@ -30,6 +30,9 @@ class QuestionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final contentLang = ref.watch(contentLangProvider);
     final letters = ['A', 'B', 'C', 'D'];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subjectBadgeColor = isDark ? Colors.blue.shade300 : AppColors.primaryNavy;
+    final yearBadgeColor = isDark ? Colors.tealAccent : Colors.teal;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -42,37 +45,37 @@ class QuestionCard extends ConsumerWidget {
           children: [
             // Header: subject + difficulty badges
             Row(children: [
-              _badge(question.subject, AppColors.primaryNavy),
+              _badge(question.subject, subjectBadgeColor),
               const SizedBox(width: 8),
               _badge(question.difficulty, _difficultyColor(question.difficulty)),
-              if (question.year != null) ...[
-                const SizedBox(width: 8),
-                _badge('${question.year}', Colors.teal),
-              ],
+              ...[
+              const SizedBox(width: 8),
+              _badge('${question.year}', yearBadgeColor),
+            ],
             ]),
             const SizedBox(height: 12),
 
             // Question text
             BilingualText(
-              tamilText: question.questionTa,
-              englishText: question.questionEn,
+              tamilText: question.questionTamil,
+              englishText: question.questionEnglish,
               contentLang: contentLang,
               primaryStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 14),
 
             // Options
-            ...List.generate(question.options.length, (i) {
-              final opt = question.options[i];
-              final isCorrect = showAnswer && opt.id == question.correctOptionId;
+            ...List.generate(question.optionsTamil.length, (i) {
+              final isCorrect = showAnswer && i == question.correctOptionIndex;
               final isWrong = showAnswer &&
-                  selectedOptionId == opt.id &&
-                  opt.id != question.correctOptionId;
+                  selectedOptionIndex == i &&
+                  i != question.correctOptionIndex;
               return OptionTile(
-                option: opt,
+                textTa: question.optionsTamil[i],
+                textEn: question.optionsEnglish.length > i ? question.optionsEnglish[i] : question.optionsTamil[i],
                 optionLetter: i < letters.length ? letters[i] : '${i + 1}',
                 contentLang: contentLang,
-                isSelected: selectedOptionId == opt.id,
+                isSelected: selectedOptionIndex == i,
                 isCorrect: isCorrect ? true : null,
                 isWrong: isWrong ? true : null,
               );
@@ -84,8 +87,8 @@ class QuestionCard extends ConsumerWidget {
               _correctAnswerLabel(context),
               const SizedBox(height: 8),
               BilingualText(
-                tamilText: question.explanationTa,
-                englishText: question.explanationEn,
+                tamilText: question.explanationTamil,
+                englishText: question.explanationEnglish,
                 contentLang: contentLang,
                 primaryStyle: const TextStyle(fontSize: 13),
                 secondaryStyle: TextStyle(fontSize: 12, color: Colors.grey.shade600),
@@ -119,7 +122,7 @@ class QuestionCard extends ConsumerWidget {
   Widget _badge(String label, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(label,
@@ -136,8 +139,7 @@ class QuestionCard extends ConsumerWidget {
   }
 
   Widget _correctAnswerLabel(BuildContext context) {
-    final idx = question.options
-        .indexWhere((o) => o.id == question.correctOptionId);
+    final idx = question.correctOptionIndex;
     final letters = ['A', 'B', 'C', 'D'];
     final letter = idx >= 0 && idx < letters.length ? letters[idx] : '?';
     return Row(children: [

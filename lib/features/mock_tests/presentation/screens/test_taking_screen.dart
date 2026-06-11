@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/question_model.dart';
 import '../../providers/test_providers.dart';
 
@@ -22,8 +21,8 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> with Widget
   bool _isTamil = true;
   int _currentIndex = 0;
   List<QuestionModel> _questions = [];
-  Map<int, int> _answers = {}; // index -> selectedOptionIndex
-  Set<int> _bookmarked = {};
+  final Map<int, int> _answers = {}; // index -> selectedOptionIndex
+  final Set<int> _bookmarked = {};
   bool _isLoading = true;
   bool _isPaused = false;
 
@@ -272,7 +271,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> with Widget
                       Switch(
                         value: _isTamil,
                         onChanged: (val) => setState(() => _isTamil = val),
-                        activeColor: Theme.of(context).colorScheme.primary,
+                        activeThumbColor: Theme.of(context).colorScheme.primary,
                       ),
                       const Text('தமிழ்'),
                     ],

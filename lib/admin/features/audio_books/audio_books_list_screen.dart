@@ -119,7 +119,7 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   headingRowColor: WidgetStateProperty.all(
-                      AdminTheme.navy.withOpacity(0.04)),
+                      AdminTheme.navy.withValues(alpha: 0.04)),
                   columns: const [
                     DataColumn(label: Text('Title', style: TextStyle(fontWeight: FontWeight.w600))),
                     DataColumn(label: Text('Subject', style: TextStyle(fontWeight: FontWeight.w600))),
@@ -144,9 +144,9 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
 
   Widget _buildStats(List<AudioBookModel> books) {
     final active = books.where((b) => b.isActive).length;
-    final totalPlays = books.fold<int>(0, (sum, b) => sum + b.playCount);
+    final totalPlays = books.fold<int>(0, (acc, b) => acc + b.playCount);
     final totalMinutes =
-        books.fold<int>(0, (sum, b) => sum + b.durationSeconds) ~/ 60;
+        books.fold<int>(0, (acc, b) => acc + b.durationSeconds) ~/ 60;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -199,7 +199,7 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AdminTheme.saffron.withOpacity(0.1),
+                color: AdminTheme.saffron.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
@@ -232,7 +232,7 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color: book.isActive
-              ? AdminTheme.success.withOpacity(0.1)
+              ? AdminTheme.success.withValues(alpha: 0.1)
               : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../shared/models/current_affairs_model.dart';
 import '../../providers/current_affairs_providers.dart';
@@ -65,7 +64,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                       Switch(
                         value: _isTamil,
                         onChanged: (val) => setState(() => _isTamil = val),
-                        activeColor: Theme.of(context).colorScheme.secondary,
+                        activeThumbColor: Theme.of(context).colorScheme.secondary,
                       ),
                       const Text('TA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 16),

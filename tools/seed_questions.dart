@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../lib/shared/models/question_model.dart';
+import 'package:thiral_app/shared/models/question_model.dart';
 // Note: Adjust import path for firebase_options.dart based on your setup.
-import '../lib/firebase_options.dart';
+import 'package:thiral_app/firebase_options.dart';
 
 /// Seed script to populate Firestore with 50 sample questions.
 /// Run via: flutter run tools/seed_questions.dart

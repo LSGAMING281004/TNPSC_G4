@@ -39,6 +39,17 @@
 		<array>
 			<string>applinks:thiral.app</string>
 		</array>
+		<key>NSCameraUsageDescription</key>
+		<string>To update your profile photo</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>To choose a profile photo</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>For voice search in AI assistant</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>googlegmail</string>
+			<string>googledocs</string>
+		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>

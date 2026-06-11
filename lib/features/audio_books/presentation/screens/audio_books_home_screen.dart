@@ -14,16 +14,15 @@ class AudioBooksHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(languageNotifierProvider);
-    final s = context.s;
+    final l10n = context.l10n;
     final subjectFilter = ref.watch(audioSubjectFilterProvider);
     final booksAsync = ref.watch(audioBooksSubjectProvider(subjectFilter));
     final currentlyPlaying = ref.watch(currentlyPlayingIdProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.studyMaterials), // reuse or add a new string
-        backgroundColor: AppColors.primaryNavy,
-        foregroundColor: Colors.white,
+        title: Text(l10n.studyMaterials), // reuse or add a new string
       ),
       body: Column(
         children: [
@@ -42,7 +41,7 @@ class AudioBooksHomeScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(Icons.headphones_rounded,
@@ -61,7 +60,7 @@ class AudioBooksHomeScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text('Listen & Learn on the go 🎧',
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 13)),
                         ],
                       ),
@@ -110,10 +109,10 @@ class AudioBooksHomeScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.headset_off,
-                            size: 64, color: Colors.grey.shade400),
+                            size: 64, color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
                         const SizedBox(height: 12),
-                        Text(s.noData,
-                            style: TextStyle(color: Colors.grey.shade500)),
+                        Text(l10n.noData,
+                            style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade500)),
                       ],
                     ),
                   );

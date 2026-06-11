@@ -18,9 +18,14 @@ class AppConstants {
   static const String privacyUrl      = 'https://thiral.app/privacy';
   static const String termsUrl        = 'https://thiral.app/terms';
 
+  // Supabase Configuration
+  static const String supabaseUrl = 'REPLACE_WITH_SUPABASE_URL';
+  static const String supabaseAnonKey = 'REPLACE_WITH_SUPABASE_ANON_KEY';
+  static const String supabaseMediaBucket = 'media';
+
   // Exam Info
   static final DateTime examDate = DateTime(2026, 12, 15); // Update when official date released
-  static const DateTime examTargetDate = DateTime(2026, 12, 15);
+  static final DateTime examTargetDate = DateTime(2026, 12, 15);
   static const String examName = 'TNPSC Group IV & VAO 2026';
   static const String examNameTamil = 'TNPSC குரூப் IV & VAO';
   static const int totalQuestions = 100;

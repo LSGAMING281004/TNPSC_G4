@@ -15,9 +15,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Question'), backgroundColor: AppColors.primaryNavy,
+        title: const Text('Question'),
         actions: [IconButton(icon: const Icon(Icons.bookmark_border), onPressed: () {})],
       ),
       body: SingleChildScrollView(
@@ -28,8 +29,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
             const Text('Who was the first Chief Minister of Tamil Nadu after independence?',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.5)),
             const SizedBox(height: 8),
-            const Text('சுதந்திரத்திற்குப் பின் தமிழ்நாட்டின் முதல் முதலமைச்சர் யார்?',
-              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.grey, height: 1.5)),
+            Text('சுதந்திரத்திற்குப் பின் தமிழ்நாட்டின் முதல் முதலமைச்சர் யார்?',
+              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, height: 1.5)),
             const SizedBox(height: 24),
             ...['O.P. Ramasamy Reddiar', 'C. Rajagopalachari', 'K. Kamaraj', 'M.G. Ramachandran'].asMap().entries.map((e) {
               final i = e.key;
@@ -48,8 +49,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: _revealed
-                          ? (isCorrect ? AppColors.success : isSelected ? AppColors.error : Colors.grey.shade300)
-                          : (isSelected ? AppColors.accentSaffron : Colors.grey.shade300),
+                          ? (isCorrect ? AppColors.success : isSelected ? AppColors.error : (isDark ? Colors.grey.shade800 : Colors.grey.shade300))
+                          : (isSelected ? AppColors.accentSaffron : (isDark ? Colors.grey.shade800 : Colors.grey.shade300)),
                       width: isSelected || (isCorrect && _revealed) ? 2 : 1,
                     ),
                   ),
@@ -58,10 +59,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                       Container(
                         width: 32, height: 32,
                         decoration: BoxDecoration(shape: BoxShape.circle,
-                          color: _revealed ? (isCorrect ? AppColors.success : isSelected ? AppColors.error : Colors.grey.shade200)
-                              : (isSelected ? AppColors.accentSaffron : Colors.grey.shade200)),
+                          color: _revealed ? (isCorrect ? AppColors.success : isSelected ? AppColors.error : (isDark ? Colors.grey.shade800 : Colors.grey.shade200))
+                              : (isSelected ? AppColors.accentSaffron : (isDark ? Colors.grey.shade800 : Colors.grey.shade200))),
                         child: Center(child: Text('ABCD'[i], style: TextStyle(fontWeight: FontWeight.bold,
-                          color: isSelected || (isCorrect && _revealed) ? Colors.white : Colors.grey.shade600))),
+                          color: isSelected || (isCorrect && _revealed) ? Colors.white : (isDark ? Colors.grey.shade300 : Colors.grey.shade600)))),
                       ),
                       const SizedBox(width: 12),
                       Expanded(child: Text(opt, style: const TextStyle(fontSize: 15))),

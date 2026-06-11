@@ -24,7 +24,6 @@ class _AddEditAudioBookScreenState
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isUploading = false;
-  double _uploadProgress = 0;
 
   // Form fields
   final _titleEn = TextEditingController();
@@ -307,9 +306,9 @@ class _AddEditAudioBookScreenState
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AdminTheme.success.withOpacity(0.06),
+              color: AdminTheme.success.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AdminTheme.success.withOpacity(0.3)),
+              border: Border.all(color: AdminTheme.success.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -360,7 +359,7 @@ class _AddEditAudioBookScreenState
     List<String> extensions,
     ValueChanged<String> onDone,
   ) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: extensions,
       withData: true,
@@ -372,7 +371,6 @@ class _AddEditAudioBookScreenState
 
     setState(() {
       _isUploading = true;
-      _uploadProgress = 0;
     });
 
     try {

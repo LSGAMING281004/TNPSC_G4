@@ -9,7 +9,6 @@ class AppTheme {
   static const Color _primaryNavy = Color(0xFF0B1E36);
   static const Color _flameOrange = Color(0xFFF07020);
   static const Color _flameGold = Color(0xFFF5C518);
-  static const Color _success = Color(0xFF2ECC71);
   static const Color _error = Color(0xFFE74C3C);
 
   // ─── Shared Color Schemes ───

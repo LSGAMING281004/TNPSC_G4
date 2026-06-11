@@ -10,11 +10,11 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifAsync = ref.watch(notificationsStreamProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: AppColors.primaryNavy,
         actions: [
           TextButton(
               onPressed: () => _markAllRead(ref),
@@ -37,11 +37,11 @@ class NotificationsScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.notifications_none,
-                    color: Colors.grey.shade300, size: 64),
+                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300, size: 64),
                 const SizedBox(height: 12),
                 Text('No notifications yet',
                     style: TextStyle(
-                        color: Colors.grey.shade500, fontSize: 16)),
+                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500, fontSize: 16)),
               ],
             ));
           }
@@ -74,8 +74,9 @@ class NotificationsScreen extends ConsumerWidget {
                               .withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 4)
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 4,
+                    )
                   ],
                 ),
                 child: Row(
@@ -102,14 +103,14 @@ class NotificationsScreen extends ConsumerWidget {
                           Text(body,
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600)),
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
                           const SizedBox(height: 6),
                           Row(
                             children: [
                               Text(timeAgo,
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.grey.shade400)),
+                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400)),
                               if (status.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 Container(

@@ -19,7 +19,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(currentUserProvider);
+    final user = ref.watch(userModelProvider).value;
     final statsAsync = ref.watch(dashboardStatsProvider);
     final affairsAsync = ref.watch(currentAffairsPreviewProvider);
     final leaderboardAsync = ref.watch(leaderboardPreviewProvider);
@@ -49,12 +49,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             Text(
                               _getGreeting(),
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey.shade600,
+                                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              user?.displayName ?? 'Scholar',
+                              user?.name ?? 'Scholar',
                               style: Theme.of(context).textTheme.headlineMedium,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -75,9 +75,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: CircleAvatar(
                           radius: 20,
                           backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                          backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
-                          child: user?.photoURL == null 
-                              ? Text((user?.displayName ?? 'S')[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold))
+                          backgroundImage: user?.photoUrl != null ? NetworkImage(user!.photoUrl!) : null,
+                          child: user?.photoUrl == null 
+                              ? Text((user?.name ?? 'S')[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold))
                               : null,
                         ),
                       ),
@@ -290,7 +290,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade200,
                         valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                         minHeight: 8,
                       ),
@@ -298,7 +298,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${stats.todayTargetCompleted} completed',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600),
                     ),
                   ],
                 ),
@@ -526,7 +526,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           Text(
             quote['english']!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.shade700,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade300 : Colors.grey.shade700,
               fontStyle: FontStyle.italic,
             ),
             textAlign: TextAlign.center,
@@ -638,7 +638,7 @@ class _ActionCard extends StatelessWidget {
                   Icon(icon, color: color, size: 28),
                   const Spacer(),
                   Text(titleEn, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  Text(titleTa, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade700)),
+                  Text(titleTa, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade300 : Colors.grey.shade700)),
                 ],
               ),
             ),
@@ -678,7 +678,7 @@ class _LeaderboardPodium extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(user.name.split(' ').first, style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
-        Text(user.score.toString(), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey.shade600)),
+        Text(user.score.toString(), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
         const SizedBox(height: 8),
         Container(
           width: 60,

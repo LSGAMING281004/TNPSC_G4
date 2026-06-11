@@ -6,8 +6,9 @@ class BookmarkedQuestionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Bookmarked Questions'), backgroundColor: AppColors.primaryNavy,
+      appBar: AppBar(title: const Text('Bookmarked Questions'),
         actions: [TextButton(onPressed: () {}, child: const Text('Quick Test', style: TextStyle(color: AppColors.accentSaffron)))],
       ),
       body: ListView.builder(
@@ -23,7 +24,7 @@ class BookmarkedQuestionsScreen extends StatelessWidget {
             title: Text('Bookmarked question ${i + 1}: Sample question text', style: const TextStyle(fontSize: 14)),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Text('General Studies • Medium', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+              child: Text('General Studies • Medium', style: TextStyle(fontSize: 11, color: isDark ? Colors.grey.shade400 : Colors.grey.shade500)),
             ),
             trailing: IconButton(icon: const Icon(Icons.bookmark, color: AppColors.accentSaffron), onPressed: () {}),
           ),

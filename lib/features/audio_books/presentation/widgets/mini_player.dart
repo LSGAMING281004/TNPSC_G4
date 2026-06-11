@@ -38,7 +38,7 @@ class MiniPlayer extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryNavy.withOpacity(0.3),
+                  color: AppColors.primaryNavy.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -51,7 +51,7 @@ class MiniPlayer extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.accentSaffron.withOpacity(0.15),
+                    color: AppColors.accentSaffron.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Center(
@@ -76,7 +76,7 @@ class MiniPlayer extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(book.subject,
                           style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 11)),
                     ],
                   ),
@@ -108,7 +108,7 @@ class MiniPlayer extends ConsumerWidget {
                             ),
                             IconButton(
                               icon: Icon(Icons.close,
-                                  color: Colors.white.withOpacity(0.5), size: 20),
+                                  color: Colors.white.withValues(alpha: 0.5), size: 20),
                               onPressed: () {
                                 handler.stop();
                                 ref.read(currentlyPlayingIdProvider.notifier).state = null;

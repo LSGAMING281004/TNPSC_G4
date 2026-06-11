@@ -13,19 +13,31 @@ class QuestionFilterNotifier extends StateNotifier<QuestionFilter> {
   
   void toggleSubject(String subject) {
     final s = Set<String>.from(state.subjects);
-    if (s.contains(subject)) s.remove(subject); else s.add(subject);
+    if (s.contains(subject)) {
+      s.remove(subject);
+    } else {
+      s.add(subject);
+    }
     state = state.copyWith(subjects: s);
   }
 
   void toggleDifficulty(String diff) {
     final d = Set<String>.from(state.difficulties);
-    if (d.contains(diff)) d.remove(diff); else d.add(diff);
+    if (d.contains(diff)) {
+      d.remove(diff);
+    } else {
+      d.add(diff);
+    }
     state = state.copyWith(difficulties: d);
   }
 
   void toggleYear(int year) {
     final y = Set<int>.from(state.years);
-    if (y.contains(year)) y.remove(year); else y.add(year);
+    if (y.contains(year)) {
+      y.remove(year);
+    } else {
+      y.add(year);
+    }
     state = state.copyWith(years: y);
   }
 
@@ -48,10 +60,10 @@ class BookmarksNotifier extends StateNotifier<List<String>> {
   }
 
   Future<void> _init() async {
-    if (!Hive.isBoxOpen('bookmarks')) {
-      _box = await Hive.openBox('bookmarks');
+    if (!Hive.isBoxOpen('bookmarks_box')) {
+      _box = await Hive.openBox('bookmarks_box');
     } else {
-      _box = Hive.box('bookmarks');
+      _box = Hive.box('bookmarks_box');
     }
     state = _box.values.cast<String>().toList();
   }

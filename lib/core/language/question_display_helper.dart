@@ -25,27 +25,27 @@ class QuestionDisplayHelper {
   static String? getQuestionText(QuestionModel q, String contentLang) {
     if (contentLang == 'both') return null;
     if (contentLang == 'ta') {
-      return q.questionTa.isNotEmpty ? q.questionTa : q.questionEn;
+      return q.questionTamil.isNotEmpty ? q.questionTamil : q.questionEnglish;
     }
-    return q.questionEn.isNotEmpty ? q.questionEn : q.questionTa;
+    return q.questionEnglish.isNotEmpty ? q.questionEnglish : q.questionTamil;
   }
 
   // ─── Option text ──────────────────────────────────────────────────────────
-  static String? getOptionText(OptionModel opt, String contentLang) {
+  static String? getOptionText(QuestionModel q, int optionIndex, String contentLang) {
     if (contentLang == 'both') return null;
     if (contentLang == 'ta') {
-      return opt.textTa.isNotEmpty ? opt.textTa : opt.textEn;
+      return q.optionsTamil.length > optionIndex ? q.optionsTamil[optionIndex] : q.optionsEnglish[optionIndex];
     }
-    return opt.textEn.isNotEmpty ? opt.textEn : opt.textTa;
+    return q.optionsEnglish.length > optionIndex ? q.optionsEnglish[optionIndex] : q.optionsTamil[optionIndex];
   }
 
   // ─── Explanation ──────────────────────────────────────────────────────────
   static String? getExplanation(QuestionModel q, String contentLang) {
     if (contentLang == 'both') return null;
     if (contentLang == 'ta') {
-      return q.explanationTa.isNotEmpty ? q.explanationTa : q.explanationEn;
+      return q.explanationTamil.isNotEmpty ? q.explanationTamil : q.explanationEnglish;
     }
-    return q.explanationEn.isNotEmpty ? q.explanationEn : q.explanationTa;
+    return q.explanationEnglish.isNotEmpty ? q.explanationEnglish : q.explanationTamil;
   }
 
   // ─── Current affairs ──────────────────────────────────────────────────────

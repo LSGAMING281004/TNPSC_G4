@@ -58,6 +58,7 @@ service cloud.firestore {
     match /questions/{questionId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+      // Rate limiting via Cloud Functions for bulk reads
     }
 
     // ─── Mock Tests Collection ───
@@ -135,10 +136,11 @@ service cloud.firestore {
 
     // ─── Conversations Collection (AI Chat) ───
     match /conversations/{conversationId} {
-      allow read, write: if isAuthenticated() &&
+      allow read, update, delete: if isAuthenticated() &&
         resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() &&
         request.resource.data.userId == request.auth.uid;
+      allow list: if isAuthenticated();
     }
 
     // ─── Achievements ───

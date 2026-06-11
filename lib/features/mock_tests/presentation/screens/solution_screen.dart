@@ -7,8 +7,9 @@ class SolutionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Solutions'), backgroundColor: AppColors.primaryNavy),
+      appBar: AppBar(title: const Text('Solutions')),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 10,
@@ -50,7 +51,7 @@ class SolutionScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isCorrectOpt ? AppColors.success.withValues(alpha: 0.08) : isUserChoice && !isCorrect ? AppColors.error.withValues(alpha: 0.08) : Colors.grey.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: isCorrectOpt ? AppColors.success : isUserChoice && !isCorrect ? AppColors.error : Colors.grey.shade300),
+                        border: Border.all(color: isCorrectOpt ? AppColors.success : isUserChoice && !isCorrect ? AppColors.error : (isDark ? Colors.grey.shade800 : Colors.grey.shade300)),
                       ),
                       child: Row(
                         children: [

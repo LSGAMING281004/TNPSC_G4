@@ -19,6 +19,14 @@ class UserModel {
   final bool isPremium;
   final String? fcmToken;
 
+  int get totalPoints => totalScore;
+  double get accuracy {
+    if (subjectScores.isEmpty) return 0.0;
+    return subjectScores.values.reduce((a, b) => a + b) / subjectScores.length;
+  }
+  int get studyStreak => currentStreak;
+  int get questionsAttempted => testsAttempted * 10;
+
   UserModel({
     required this.uid,
     required this.name,

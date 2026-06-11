@@ -14,7 +14,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   void _finishOnboarding() {
-    Hive.box('settings').put('onboarding_done', true);
+    Hive.box('settings_box').put('onboarding_done', true);
     context.go('/login');
   }
 

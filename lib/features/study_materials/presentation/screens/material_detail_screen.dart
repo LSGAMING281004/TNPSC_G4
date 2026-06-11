@@ -9,7 +9,7 @@ class MaterialDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Indian History'), backgroundColor: AppColors.primaryNavy,
+        title: const Text('Indian History'),
         actions: [
           IconButton(icon: const Icon(Icons.bookmark_border), onPressed: () {}),
           IconButton(icon: const Icon(Icons.share), onPressed: () {}),

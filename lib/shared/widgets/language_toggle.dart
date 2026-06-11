@@ -15,6 +15,8 @@ class LanguageModeToggle extends ConsumerWidget {
     final current = ref.watch(languageNotifierProvider);
     final testActive = ref.watch(testActiveProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Tooltip(
       message: testActive
           ? 'Cannot change language during an active test\nதேர்வு நடக்கும்போது மொழியை மாற்ற முடியாது'
@@ -25,9 +27,9 @@ class LanguageModeToggle extends ConsumerWidget {
           opacity: testActive ? 0.4 : 1.0,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: isDark ? const Color(0xFF152A4A) : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(compact ? 20 : 12),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: isDark ? const Color(0xFF1F324E) : Colors.grey.shade300),
             ),
             padding: const EdgeInsets.all(3),
             child: Row(
@@ -44,7 +46,9 @@ class LanguageModeToggle extends ConsumerWidget {
                         ? const EdgeInsets.symmetric(horizontal: 10, vertical: 6)
                         : const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isActive ? AppColors.primaryNavy : Colors.transparent,
+                      color: isActive 
+                          ? (isDark ? AppColors.accentSaffron : AppColors.primaryNavy) 
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(compact ? 18 : 10),
                     ),
                     child: Text(
@@ -52,7 +56,9 @@ class LanguageModeToggle extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: compact ? 11 : 13,
                         fontWeight: FontWeight.w600,
-                        color: isActive ? Colors.white : Colors.grey.shade700,
+                        color: isActive 
+                            ? (isDark ? Colors.black87 : Colors.white) 
+                            : (isDark ? Colors.grey.shade400 : Colors.grey.shade700),
                       ),
                     ),
                   ),
