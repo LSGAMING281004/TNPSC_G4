@@ -68,7 +68,10 @@ android/key.properties
 *.keystore
 *.jks
 .env
-.env.*
+.env.local
+.env.production
+.env.staging
+!.env.example
 *.pem
 *.p12
 

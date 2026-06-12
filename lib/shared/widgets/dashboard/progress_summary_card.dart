@@ -14,7 +14,7 @@ class ProgressSummaryCard extends ConsumerWidget {
       loading: () => Container(
         height: 160,
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Center(
@@ -140,7 +140,7 @@ class _StatCard extends StatelessWidget {
                     fontSize: 18, fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 2),
             Text(label,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
           ],
         ),
       ),

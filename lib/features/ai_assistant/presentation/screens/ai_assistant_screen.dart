@@ -78,10 +78,21 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
     _initAI();
   }
 
+  bool _isKeyMissing = false;
+
   Future<void> _initAI() async {
+    final apiKey = AppSecrets.geminiApiKey;
+    if (apiKey.isEmpty) {
+      setState(() {
+        _isKeyMissing = true;
+        _isInitialized = true;
+      });
+      return;
+    }
+
     _model = GenerativeModel(
       model: 'gemini-2.0-flash',
-      apiKey: AppSecrets.geminiApiKey,
+      apiKey: apiKey,
       systemInstruction: Content.system(AppConstants.aiSystemPrompt),
     );
 
@@ -270,6 +281,35 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
       return Scaffold(
         appBar: AppBar(title: const Text('TamilBot')),
         body: const Center(child: CircularProgressIndicator(color: AppColors.accentSaffron)),
+      );
+    }
+
+    if (_isKeyMissing) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('TamilBot')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.cloud_off, size: 64, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                Text(
+                  'AI Assistant is temporarily unavailable',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'The Gemini API key is not configured.\nPlease contact the developer.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 

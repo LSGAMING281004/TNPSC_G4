@@ -91,7 +91,7 @@ class QuestionCard extends ConsumerWidget {
                 englishText: question.explanationEnglish,
                 contentLang: contentLang,
                 primaryStyle: const TextStyle(fontSize: 13),
-                secondaryStyle: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                secondaryStyle: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ],
 

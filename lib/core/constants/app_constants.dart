@@ -1,3 +1,5 @@
+import '../config/secrets.dart';
+
 /// Application-wide constants for TNPSC Group 4 Master 2026
 class AppConstants {
   AppConstants._();
@@ -18,9 +20,9 @@ class AppConstants {
   static const String privacyUrl      = 'https://thiral.app/privacy';
   static const String termsUrl        = 'https://thiral.app/terms';
 
-  // Supabase Configuration
-  static const String supabaseUrl = 'REPLACE_WITH_SUPABASE_URL';
-  static const String supabaseAnonKey = 'REPLACE_WITH_SUPABASE_ANON_KEY';
+  // Supabase Configuration (loaded from .env via AppSecrets)
+  static String get supabaseUrl => AppSecrets.supabaseUrl;
+  static String get supabaseAnonKey => AppSecrets.supabaseAnonKey;
   static const String supabaseMediaBucket = 'media';
 
   // Exam Info

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
 import '../providers/app_providers.dart';
 
@@ -24,9 +25,9 @@ class GuestRestrictions {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.lock_outline, color: Colors.orange, size: 28),
+            const Icon(Icons.lock_outline, color: AppColors.accentSaffron, size: 28),
             const SizedBox(width: 10),
-            Text('Sign In Required'),
+            Text('Sign In Required', style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
         content: Text(
@@ -36,11 +37,11 @@ class GuestRestrictions {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.accentSaffron,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),

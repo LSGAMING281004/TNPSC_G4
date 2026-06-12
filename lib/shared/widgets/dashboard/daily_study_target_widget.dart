@@ -13,7 +13,7 @@ class DailyStudyTargetWidget extends ConsumerWidget {
     final todayCountAsync = ref.watch(todayAttemptsCountProvider);
 
     return userAsync.when(
-      loading: () => _buildShimmer(),
+      loading: () => _buildShimmer(context),
       error: (_, __) => const SizedBox.shrink(),
       data: (user) {
         final questionsToday = todayCountAsync.valueOrNull ?? 0;
@@ -82,7 +82,7 @@ class DailyStudyTargetWidget extends ConsumerWidget {
                                   fontSize: 22, fontWeight: FontWeight.bold)),
                           Text('/$questionsGoal',
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey.shade500)),
+                                  fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5))),
                         ],
                       ),
                       progressColor: AppColors.accentSaffron,
@@ -119,11 +119,11 @@ class DailyStudyTargetWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Container(
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Center(
@@ -153,7 +153,7 @@ class _TargetRow extends StatelessWidget {
         Row(
           children: [
             Text(label,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
             const Spacer(),
             Text('$done/$total',
                 style: TextStyle(

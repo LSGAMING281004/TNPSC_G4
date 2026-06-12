@@ -25,7 +25,7 @@ class LanguageSettingsSection extends ConsumerWidget {
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
         ),
         Card(
           shape:
@@ -95,7 +95,7 @@ class _LanguageOptionTile extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: isSelected ? color : Theme.of(context).colorScheme.onSurface)),
         subtitle: Text(subtitle,
-            style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
+            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         trailing: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: 22,
@@ -103,7 +103,7 @@ class _LanguageOptionTile extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-                color: isSelected ? color : (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade600 : Colors.grey.shade400), width: 2),
+                color: isSelected ? color : Theme.of(context).colorScheme.outline, width: 2),
             color: isSelected ? color : Colors.transparent,
           ),
           child: isSelected
@@ -136,9 +136,9 @@ class _LanguageOptionTile extends StatelessWidget {
   Color _modeColor(BuildContext context, LanguageMode m) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (m) {
-      case LanguageMode.tamil:   return Colors.deepOrange;
+      case LanguageMode.tamil:   return AppColors.accentSaffronDark;
       case LanguageMode.english: return isDark ? Colors.blue.shade400 : AppColors.primaryNavy;
-      case LanguageMode.both:    return Colors.teal;
+      case LanguageMode.both:    return AppColors.info;
     }
   }
 }
@@ -156,7 +156,6 @@ class _LanguagePreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -170,10 +169,10 @@ class _LanguagePreviewCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF152A4A) : Colors.grey.shade50,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: isDark ? const Color(0xFF1F324E) : Colors.grey.shade200),
+                color: Theme.of(context).colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,9 +190,9 @@ class _LanguagePreviewCard extends StatelessWidget {
                 tamilText: _optTa,
                 englishText: _optEn,
                 contentLang: currentLang,
-                primaryStyle: TextStyle(
+                primaryStyle: const TextStyle(
                     fontSize: 13,
-                    color: isDark ? Colors.greenAccent : Colors.green),
+                    color: AppColors.success),
               ),
             ],
           ),

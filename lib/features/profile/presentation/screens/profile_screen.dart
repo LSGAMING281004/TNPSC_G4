@@ -136,7 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey.shade50,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Profile'),
         elevation: 0,
@@ -180,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppColors.primaryNavy)),
+        child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
       ),
     );
   }
@@ -201,7 +201,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 lineWidth: 6.0,
                 percent: (readiness / 100).clamp(0.0, 1.0),
                 progressColor: AppColors.success,
-                backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                 circularStrokeCap: CircularStrokeCap.round,
               ),
               GestureDetector(
@@ -247,10 +247,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     : Row(
                         children: [
                           Text(user.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          IconButton(icon: Icon(Icons.edit, size: 16, color: isDark ? Colors.grey.shade400 : Colors.grey), onPressed: () => setState(() => _isEditingName = true)),
+                          IconButton(icon: Icon(Icons.edit, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)), onPressed: () => setState(() => _isEditingName = true)),
                         ],
                       ),
-                Text(user.email, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13)),
+                Text(user.email, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -319,7 +319,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
           Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(label, style: TextStyle(fontSize: 10, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)), textAlign: TextAlign.center),
         ],
       ),
     );
@@ -358,7 +358,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   lineHeight: 8.0,
                   percent: percent,
                   padding: EdgeInsets.zero,
-                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   progressColor: AppColors.accentSaffron,
                   barRadius: const Radius.circular(4),
                 ),
@@ -394,13 +394,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(a.icon, style: TextStyle(fontSize: 32, color: unlocked ? null : Colors.grey.withValues(alpha: 0.3))),
+                Text(a.icon, style: TextStyle(fontSize: 32, color: unlocked ? null : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2))),
                 const SizedBox(height: 8),
                 Text(
                   a.title,
                   textAlign: TextAlign.center,
                   maxLines: 2,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: unlocked ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.grey.shade400 : Colors.grey)),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: unlocked ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                 ),
                 const SizedBox(height: 4),
                 if (unlocked)
@@ -410,7 +410,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: const Text('UNLOCKED', style: TextStyle(fontSize: 8, color: AppColors.success, fontWeight: FontWeight.bold)),
                   )
                 else
-                  Text('${a.xp} XP', style: TextStyle(fontSize: 10, color: isDark ? Colors.grey.shade400 : Colors.grey)),
+                  Text('${a.xp} XP', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4))),
               ],
             ),
           );
@@ -455,7 +455,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const Divider(height: 1),
           ListTile(
             title: const Text('Log Out'),
-            leading: const Icon(Icons.logout, color: Colors.grey),
+            leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) context.go('/login');

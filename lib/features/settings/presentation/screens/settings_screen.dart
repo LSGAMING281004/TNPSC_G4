@@ -303,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ListTile(
               leading: Icon(Icons.verified, color: iconColor),
               title: const Text('App Version'),
-              trailing: Text(_appVersion, style: const TextStyle(color: Colors.grey)),
+              trailing: Text(_appVersion, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
             const Divider(height: 0),
             ListTile(
@@ -358,8 +358,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
     return Row(
       children: [
         Icon(icon, size: 20, color: color),

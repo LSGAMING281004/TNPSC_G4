@@ -54,7 +54,7 @@ class WeakSubjectsAlert extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(weakAreas,
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600)),
+                            fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   ],
                 ),
               ),

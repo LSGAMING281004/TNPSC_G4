@@ -36,17 +36,17 @@ class TodaysCurrentAffairsCard extends ConsumerWidget {
             child: CircularProgressIndicator(
                 strokeWidth: 2, color: AppColors.accentSaffron),
           )),
-          error: (_, __) => const Padding(
-            padding: EdgeInsets.all(16),
+          error: (_, __) => Padding(
+            padding: const EdgeInsets.all(16),
             child: Text('Unable to load current affairs',
-                style: TextStyle(color: Colors.grey)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           data: (articles) {
             if (articles.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(20),
+              return Padding(
+                padding: const EdgeInsets.all(20),
                 child: Text('No current affairs yet.',
-                    style: TextStyle(color: Colors.grey)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               );
             }
             return Column(
@@ -164,13 +164,13 @@ class _NewsCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(time,
                           style: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 11)),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11)),
                     ],
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
           ],
         ),
       ),

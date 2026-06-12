@@ -27,9 +27,9 @@ class LanguageModeToggle extends ConsumerWidget {
           opacity: testActive ? 0.4 : 1.0,
           child: Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF152A4A) : Colors.grey.shade100,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(compact ? 20 : 12),
-              border: Border.all(color: isDark ? const Color(0xFF1F324E) : Colors.grey.shade300),
+              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
             ),
             padding: const EdgeInsets.all(3),
             child: Row(
@@ -58,7 +58,7 @@ class LanguageModeToggle extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                         color: isActive 
                             ? (isDark ? Colors.black87 : Colors.white) 
-                            : (isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ),

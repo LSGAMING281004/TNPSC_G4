@@ -24,7 +24,7 @@ class BilingualText extends StatelessWidget {
     final primary = primaryStyle ??
         const TextStyle(fontSize: 15, fontWeight: FontWeight.w400);
     final secondary = secondaryStyle ??
-        TextStyle(fontSize: 13, color: Colors.grey.shade600);
+        TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6));
 
     switch (contentLang) {
       case 'ta':
@@ -66,10 +66,10 @@ class BilingualText extends StatelessWidget {
             Text(tamilText,
                 style: primary.copyWith(fontFamily: 'NotoSansTamil')),
             const SizedBox(height: 4),
-            Divider(height: 1, thickness: 0.5, color: Colors.grey.shade300),
+            Divider(height: 1, thickness: 0.5, color: Theme.of(context).colorScheme.outlineVariant),
             const SizedBox(height: 4),
             Text(englishText,
-                style: secondary.copyWith(color: Colors.grey.shade600)),
+                style: secondary.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
           ],
         );
     }
