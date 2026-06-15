@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/utils/time_format.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -10,7 +11,6 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifAsync = ref.watch(notificationsStreamProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +55,7 @@ class NotificationsScreen extends ConsumerWidget {
               final body = (n['body'] as String?) ?? '';
               final read = (n['read'] as bool?) ?? false;
               final status = (n['status'] as String?) ?? '';
-              final timeAgo = _timeAgo(n['createdAt']);
+              final timeAgo = formatTimeAgo(n['createdAt']);
               final icon = _notifIcon(n['type'] as String?);
               final color = _notifColor(n['type'] as String?);
 
@@ -198,19 +198,5 @@ class NotificationsScreen extends ConsumerWidget {
       default:
         return AppColors.accentSaffron;
     }
-  }
-
-  String _timeAgo(dynamic timestamp) {
-    if (timestamp == null) return '';
-    DateTime date;
-    if (timestamp is Timestamp) {
-      date = timestamp.toDate();
-    } else {
-      return '';
-    }
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
   }
 }

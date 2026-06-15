@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../providers/analytics_providers.dart';
+import '../../../../shared/models/test_attempt_model.dart';
+import '../../../../shared/providers/firestore_providers.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -11,26 +13,43 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics'),
-        elevation: 0,
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildOverviewRow(ref, isDark)),
-          SliverToBoxAdapter(child: _buildSectionTitle('Subject Performance', 'Current vs Last Week', isDark)),
-          SliverToBoxAdapter(child: _buildRadarChart(context, ref, isDark)),
-          SliverToBoxAdapter(child: _buildSectionTitle('Score Trend', 'Last 10 Tests', isDark)),
-          SliverToBoxAdapter(child: _buildTrendLineChart(context, ref)),
-          SliverToBoxAdapter(child: _buildSectionTitle('Activity Heatmap', 'Last 90 Days', isDark)),
-          SliverToBoxAdapter(child: _buildActivityHeatmap(context, ref, isDark)),
-          SliverToBoxAdapter(child: _buildSectionTitle('Weak Topics', 'Focus on these areas', isDark)),
-          SliverToBoxAdapter(child: _buildWeakTopicsTable(context, ref)),
-          SliverToBoxAdapter(child: _buildSectionTitle('Improvement Tips', 'Auto-generated insights', isDark)),
-          SliverToBoxAdapter(child: _buildImprovementTips(context, ref)),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
-        ],
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Analytics'),
+          elevation: 0,
+          bottom: const TabBar(
+            indicatorColor: AppColors.accentSaffron,
+            labelColor: AppColors.accentSaffron,
+            unselectedLabelColor: Colors.grey,
+            tabs: [
+              Tab(text: 'Dashboard'),
+              Tab(text: 'Test History'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildOverviewRow(ref, isDark)),
+                SliverToBoxAdapter(child: _buildSectionTitle('Subject Performance', 'Current vs Last Week', isDark)),
+                SliverToBoxAdapter(child: _buildRadarChart(context, ref, isDark)),
+                SliverToBoxAdapter(child: _buildSectionTitle('Score Trend', 'Last 10 Tests', isDark)),
+                SliverToBoxAdapter(child: _buildTrendLineChart(context, ref)),
+                SliverToBoxAdapter(child: _buildSectionTitle('Activity Heatmap', 'Last 90 Days', isDark)),
+                SliverToBoxAdapter(child: _buildActivityHeatmap(context, ref, isDark)),
+                SliverToBoxAdapter(child: _buildSectionTitle('Weak Topics', 'Focus on these areas', isDark)),
+                SliverToBoxAdapter(child: _buildWeakTopicsTable(context, ref)),
+                SliverToBoxAdapter(child: _buildSectionTitle('Improvement Tips', 'Auto-generated insights', isDark)),
+                SliverToBoxAdapter(child: _buildImprovementTips(context, ref)),
+                const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+              ],
+            ),
+            const _TestHistoryTab(),
+          ],
+        ),
       ),
     );
   }
@@ -418,6 +437,134 @@ class _LegendItem extends StatelessWidget {
         Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+}
+
+class _TestHistoryTab extends ConsumerWidget {
+  const _TestHistoryTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attemptsAsync = ref.watch(testAttemptsProvider);
+
+    return attemptsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentSaffron)),
+      error: (err, stack) => Center(child: Text('Error loading test history: $err')),
+      data: (attempts) {
+        if (attempts.isEmpty) {
+          return const Center(
+            child: Text('No test attempts found. Take a test to see history!'),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.only(top: 8, bottom: 40),
+          itemCount: attempts.length,
+          itemBuilder: (context, index) {
+            final attempt = attempts[index];
+            return _TestHistoryItem(attempt: attempt);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TestHistoryItem extends ConsumerWidget {
+  final TestAttemptModel attempt;
+
+  const _TestHistoryItem({required this.attempt});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final testAsync = ref.watch(singleMockTestProvider(attempt.testId));
+    final date = attempt.completedAt ?? attempt.startedAt;
+    final formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return testAsync.when(
+      loading: () => const ListTile(title: Text('Loading test info...')),
+      error: (_, __) => _buildTile(context, 'Mock Test (${attempt.testId})', formattedDate, isDark),
+      data: (test) {
+        final title = test?.title ?? 'Mock Test';
+        return _buildTile(context, title, formattedDate, isDark);
+      },
+    );
+  }
+
+  Widget _buildTile(BuildContext context, String title, String formattedDate, bool isDark) {
+    final scorePercent = attempt.totalQuestions > 0 ? (attempt.correctCount / attempt.totalQuestions * 100).round() : 0;
+    
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        leading: CircleAvatar(
+          radius: 24,
+          backgroundColor: AppColors.primaryNavy.withValues(alpha: 0.1),
+          child: const Icon(Icons.assignment_turned_in, color: AppColors.primaryNavy),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 6),
+            Text(
+              formattedDate,
+              style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                _buildStatMiniBadge(Icons.check_circle_outline, '${attempt.correctCount} Correct', AppColors.success),
+                const SizedBox(width: 8),
+                _buildStatMiniBadge(Icons.cancel_outlined, '${attempt.incorrectCount} Incorrect', AppColors.error),
+              ],
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${attempt.score} Pts',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.accentSaffron),
+                ),
+                Text(
+                  '$scorePercent%',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
+        ),
+        onTap: () {
+          context.push('/test-result/${attempt.id}');
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatMiniBadge(IconData icon, String text, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: color),
+        const SizedBox(width: 2),
+        Text(text, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500)),
       ],
     );
   }

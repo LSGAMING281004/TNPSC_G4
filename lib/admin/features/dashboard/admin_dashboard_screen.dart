@@ -9,6 +9,7 @@ import '../../core/constants/admin_constants.dart';
 import '../../shared/widgets/admin_stat_card.dart';
 import '../../shared/widgets/admin_empty_state.dart';
 import '../../shared/widgets/admin_shell.dart';
+import '../../../shared/utils/time_format.dart';
 
 // ─── Firestore Stream Providers ───
 final _firestore = FirebaseFirestore.instance;
@@ -578,7 +579,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                     if (ts != null)
                       Text(
-                        _timeAgo(ts),
+                        formatTimeAgo(ts),
                         style: const TextStyle(
                           fontSize: 11,
                           color: AdminTheme.textSecondary,
@@ -605,15 +606,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
     return n.toString();
-  }
-
-  String _timeAgo(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return DateFormat('MMM dd').format(dt);
   }
 }
 

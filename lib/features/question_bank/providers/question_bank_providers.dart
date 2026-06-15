@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../shared/models/question_model.dart';
 import '../../../shared/models/question_filter_model.dart';
+import '../../../shared/providers/firestore_providers.dart';
 
 // --- StateNotifiers ---
 
@@ -184,24 +185,9 @@ final questionListProvider = StateNotifierProvider<QuestionListNotifier, AsyncVa
   return QuestionListNotifier(ref);
 });
 
-// Provides the bookmarked questions by resolving their IDs against Firestore
+// Provides the bookmarked questions by resolving their IDs against Firestore using the batched questionsByIdsProvider
 final bookmarkedQuestionsProvider = FutureProvider<List<QuestionModel>>((ref) async {
-  final bookmarkIds = ref.watch(bookmarksProvider);
+  final bookmarkIds = ref.watch(userBookmarkedQuestionIdsOrderedProvider).valueOrNull ?? [];
   if (bookmarkIds.isEmpty) return [];
-
-  // Firestore 'whereIn' limits to 10 items. For large bookmarks, we might need chunking.
-  // Here we chunk by 10.
-  List<QuestionModel> results = [];
-  
-  for (var i = 0; i < bookmarkIds.length; i += 10) {
-    final chunk = bookmarkIds.sublist(i, i + 10 > bookmarkIds.length ? bookmarkIds.length : i + 10);
-    final snapshot = await FirebaseFirestore.instance
-        .collection('questions')
-        .where(FieldPath.documentId, whereIn: chunk)
-        .get();
-        
-    results.addAll(snapshot.docs.map((d) => QuestionModel.fromMap(d.data(), d.id)));
-  }
-  
-  return results;
+  return ref.watch(questionsByIdsProvider(bookmarkIds).future);
 });

@@ -5,12 +5,14 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:uuid/uuid.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/config/secrets.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/widgets/app_dialogs.dart';
+import '../../../../shared/utils/time_format.dart';
 
 class _ChatMessage {
   final String id;
@@ -58,6 +60,7 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
   List<_ChatMessage> _messages = [];
   bool _isTyping = false;
   bool _isInitialized = false;
+  String? _conversationId;
 
   // Speech to text
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -97,8 +100,8 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
       systemInstruction: Content.system(AppConstants.aiSystemPrompt),
     );
 
-    // Load past messages
-    await _loadConversationHistory();
+    // Load past messages from last conversation
+    await _loadLastConversationHistory();
 
     // Map _messages to Content history for Gemini
     final history = _messages.map((m) {
@@ -120,36 +123,240 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
 
   String get _userId => ref.read(authUidProvider) ?? 'anonymous';
 
-  CollectionReference get _messagesRef {
-    return FirebaseFirestore.instance
-        .collection(AppConstants.conversationsCollection)
-        .doc(_userId)
-        .collection('messages');
-  }
-
-  Future<void> _loadConversationHistory() async {
+  Future<void> _loadLastConversationHistory() async {
+    if (_userId == 'anonymous') return;
     try {
-      final snapshot = await _messagesRef.orderBy('timestamp', descending: true).limit(20).get();
-      final loaded = snapshot.docs.map((doc) => _ChatMessage.fromMap(doc.data() as Map<String, dynamic>)).toList();
-      _messages = loaded.reversed.toList();
+      final snapshot = await FirebaseFirestore.instance
+          .collection(AppConstants.conversationsCollection)
+          .where('userId', isEqualTo: _userId)
+          .orderBy('updatedAt', descending: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        final data = doc.data();
+        _conversationId = doc.id;
+        final rawMessages = data['messages'] as List<dynamic>? ?? [];
+        _messages = rawMessages.map((m) => _ChatMessage.fromMap(m as Map<String, dynamic>)).toList();
+      }
     } catch (e) {
-      debugPrint('Failed to load history: $e');
+      debugPrint('Failed to load last conversation: $e');
     }
   }
 
-  Future<void> _saveMessage(_ChatMessage msg) async {
+  Future<void> _persistConversation() async {
+    if (_userId == 'anonymous') return;
+    
     try {
-      await _messagesRef.doc(msg.id).set(msg.toMap());
+      final title = _messages.isNotEmpty
+          ? (_messages.first.text.length > 40
+              ? '${_messages.first.text.substring(0, 37)}...'
+              : _messages.first.text)
+          : 'New Chat';
+
+      final docId = _conversationId ?? const Uuid().v4();
+      
+      final data = {
+        'userId': _userId,
+        'title': title,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'messages': _messages.map((m) => m.toMap()).toList(),
+      };
+
+      if (_conversationId == null) {
+        data['createdAt'] = FieldValue.serverTimestamp();
+        _conversationId = docId;
+      }
+
+      await FirebaseFirestore.instance
+          .collection(AppConstants.conversationsCollection)
+          .doc(docId)
+          .set(data, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Failed to save message: $e');
+      debugPrint('Failed to persist conversation: $e');
     }
+  }
+
+  void _startNewChat() {
+    setState(() {
+      _conversationId = null;
+      _messages = [];
+      _chat = _model.startChat();
+    });
+  }
+
+  void _loadConversation(String conversationId, Map<String, dynamic> data) {
+    final rawMessages = data['messages'] as List<dynamic>? ?? [];
+    final loaded = rawMessages.map((m) => _ChatMessage.fromMap(m as Map<String, dynamic>)).toList();
+    
+    final history = loaded.map((m) {
+      return Content(
+        m.isUser ? 'user' : 'model',
+        [TextPart(m.text)],
+      );
+    }).toList();
+
+    setState(() {
+      _conversationId = conversationId;
+      _messages = loaded;
+      _chat = _model.startChat(history: history);
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+  }
+
+  Future<void> _deleteConversation(String id) async {
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Delete Chat?',
+      message: 'Are you sure you want to delete this conversation?',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+      icon: Icons.delete_outline,
+    );
+
+    if (!confirm) return;
+
+    try {
+      await FirebaseFirestore.instance.collection(AppConstants.conversationsCollection).doc(id).delete();
+      if (id == _conversationId) {
+        _startNewChat();
+      }
+    } catch (e) {
+      debugPrint('Failed to delete chat: $e');
+    }
+  }
+
+  void _showHistoryBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection(AppConstants.conversationsCollection)
+                  .where('userId', isEqualTo: _userId)
+                  .orderBy('updatedAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.accentSaffron));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey.shade400),
+                        const SizedBox(height: 12),
+                        const Text('No past conversations found'),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _startNewChat();
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Start New Chat'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accentSaffron,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final docs = snapshot.data!.docs;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Chat History',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          TextButton.icon(
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('New Chat'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _startNewChat();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          final doc = docs[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          final title = data['title'] ?? 'New Chat';
+                          final updatedAt = data['updatedAt'];
+                          final timeStr = formatTimeAgo(updatedAt);
+
+                          final isCurrent = doc.id == _conversationId;
+
+                          return ListTile(
+                            leading: Icon(
+                              Icons.chat_bubble_outline,
+                              color: isCurrent ? AppColors.accentSaffron : (isDark ? Colors.white70 : Colors.black54),
+                            ),
+                            title: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                color: isCurrent ? AppColors.accentSaffron : null,
+                              ),
+                            ),
+                            subtitle: Text(timeStr, style: const TextStyle(fontSize: 12)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              onPressed: () => _deleteConversation(doc.id),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _loadConversation(doc.id, data);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _clearConversation() async {
     final confirm = await showConfirmDialog(
       context,
       title: 'Clear Conversation?',
-      message: 'Are you sure you want to delete all messages? This action cannot be undone.',
+      message: 'Are you sure you want to delete all messages in this conversation? This action cannot be undone.',
       confirmLabel: 'Clear',
       isDestructive: true,
       icon: Icons.delete_outline,
@@ -157,18 +364,15 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
 
     if (!confirm) return;
 
-    setState(() {
-      _messages.clear();
-      _chat = _model.startChat(); // Reset context
-    });
+    final currentId = _conversationId;
+    _startNewChat();
 
-    try {
-      final snapshot = await _messagesRef.get();
-      for (var doc in snapshot.docs) {
-        doc.reference.delete();
+    if (currentId != null && _userId != 'anonymous') {
+      try {
+        await FirebaseFirestore.instance.collection(AppConstants.conversationsCollection).doc(currentId).delete();
+      } catch (e) {
+        debugPrint('Failed to delete chat: $e');
       }
-    } catch (e) {
-      debugPrint('Failed to clear firestore: $e');
     }
   }
 
@@ -181,22 +385,87 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
 
   void _listen() async {
     if (!_isListening) {
+      var status = await Permission.microphone.status;
+      if (status.isDenied) {
+        status = await Permission.microphone.request();
+        if (status.isDenied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Microphone permission is required for voice input.')),
+            );
+          }
+          return;
+        }
+      }
+      if (status.isPermanentlyDenied) {
+        if (mounted) {
+          showConfirmDialog(
+            context,
+            title: 'Microphone Permission',
+            message: 'Microphone access is permanently denied. Please enable it in system settings.',
+            confirmLabel: 'Open Settings',
+            cancelLabel: 'Cancel',
+          ).then((value) {
+            if (value) {
+              openAppSettings();
+            }
+          });
+        }
+        return;
+      }
+
       bool available = await _speech.initialize(
-        onStatus: (val) => debugPrint('onStatus: $val'),
-        onError: (val) => debugPrint('onError: $val'),
+        onStatus: (val) {
+          debugPrint('onStatus: $val');
+          if (val == 'done' || val == 'notListening') {
+            if (mounted && _isListening) {
+              setState(() => _isListening = false);
+              final text = _messageController.text;
+              if (text.trim().isNotEmpty) {
+                _sendMessage(text);
+              }
+            }
+          }
+        },
+        onError: (val) {
+          debugPrint('onError: $val');
+          if (mounted) {
+            setState(() => _isListening = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Speech recognition error: ${val.errorMsg}')),
+            );
+          }
+        },
       );
+
       if (available) {
-        setState(() => _isListening = true);
+        setState(() {
+          _isListening = true;
+          _messageController.clear();
+        });
         _speech.listen(
-          onResult: (val) => setState(() {
-            _messageController.text = val.recognizedWords;
-          }),
-          // Let device dictate language or pass specific localeId if needed
+          onResult: (val) {
+            if (mounted) {
+              setState(() {
+                _messageController.text = val.recognizedWords;
+              });
+            }
+          },
         );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Speech recognition is not available on this device.')),
+          );
+        }
       }
     } else {
       setState(() => _isListening = false);
       _speech.stop();
+      final text = _messageController.text;
+      if (text.trim().isNotEmpty) {
+        _sendMessage(text);
+      }
     }
   }
 
@@ -217,7 +486,7 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
     
     _messageController.clear();
     _scrollToBottom();
-    _saveMessage(userMsg); // Fire and forget
+    await _persistConversation();
 
     try {
       final response = await _chat.sendMessage(Content.text(text));
@@ -236,7 +505,7 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
           _messages.add(botMsg);
         });
         _scrollToBottom();
-        _saveMessage(botMsg);
+        await _persistConversation();
       }
     } catch (e) {
       if (mounted) {
@@ -335,6 +604,11 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: _showHistoryBottomSheet,
+            tooltip: 'Chat History',
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: _clearConversation,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/utils/time_format.dart';
 
 class TodaysCurrentAffairsCard extends ConsumerWidget {
   const TodaysCurrentAffairsCard({super.key});
@@ -55,7 +56,7 @@ class TodaysCurrentAffairsCard extends ConsumerWidget {
                     (article['category'] as String?) ?? 'General';
                 final color = _categoryColor(category);
                 final title = (article['title'] as String?) ?? 'Untitled';
-                final timeAgo = _timeAgo(article['publishedAt']);
+                final timeAgo = formatTimeAgo(article['publishedAt']);
                 return _NewsCard(
                     title: title,
                     category: category,
@@ -85,20 +86,6 @@ class TodaysCurrentAffairsCard extends ConsumerWidget {
       default:
         return AppColors.warning;
     }
-  }
-
-  String _timeAgo(dynamic timestamp) {
-    if (timestamp == null) return '';
-    DateTime date;
-    if (timestamp is Timestamp) {
-      date = timestamp.toDate();
-    } else {
-      return '';
-    }
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
   }
 }
 

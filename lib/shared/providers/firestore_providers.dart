@@ -176,7 +176,7 @@ final userTestAttemptsStreamProvider =
   return FirebaseFirestore.instance
       .collection(AppConstants.testAttemptsCollection)
       .where('userId', isEqualTo: uid)
-      .orderBy('completedAt', descending: true)
+      .orderBy('attemptedAt', descending: true)
       .limit(50)
       .snapshots()
       .map((snap) => snap.docs.map((doc) {
@@ -196,7 +196,7 @@ final todayAttemptsCountProvider = StreamProvider<int>((ref) {
   return FirebaseFirestore.instance
       .collection(AppConstants.testAttemptsCollection)
       .where('userId', isEqualTo: uid)
-      .where('completedAt',
+      .where('attemptedAt',
           isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart))
       .snapshots()
       .map((snap) => snap.size);
@@ -242,6 +242,21 @@ Future<List<QuestionModel>> _fetchQuestionsForSubject(List<String> subjects, int
 
 /// Fetches a single MockTestModel by its ID from Firestore.
 final singleMockTestProvider = FutureProvider.family<MockTestModel?, String>((ref, testId) async {
+  if (testId == 'bookmarked-quick-test') {
+    final bookmarkIds = ref.watch(userBookmarkedQuestionIdsOrderedProvider).valueOrNull ?? [];
+    final duration = bookmarkIds.isNotEmpty ? bookmarkIds.length : 10;
+    return MockTestModel(
+      id: 'bookmarked-quick-test',
+      title: 'Bookmarked Questions Quick Test',
+      titleTa: 'புக்மார்க் வினாக்கள் விரைவுத் தேர்வு',
+      type: 'custom',
+      subject: 'Custom',
+      durationMinutes: duration > 60 ? 60 : duration,
+      questionCount: bookmarkIds.isEmpty ? 10 : bookmarkIds.length,
+      difficulty: 'medium',
+      createdAt: DateTime.now(),
+    );
+  }
   final doc = await FirebaseFirestore.instance
       .collection(AppConstants.mockTestsCollection)
       .doc(testId)
@@ -251,6 +266,11 @@ final singleMockTestProvider = FutureProvider.family<MockTestModel?, String>((re
 
 /// Fetches questions for a given MockTestModel from Firestore.
 final mockTestQuestionsProvider = FutureProvider.family<List<QuestionModel>, MockTestModel>((ref, test) async {
+  if (test.id == 'bookmarked-quick-test') {
+    final bookmarkIds = ref.read(userBookmarkedQuestionIdsOrderedProvider).valueOrNull ?? [];
+    if (bookmarkIds.isEmpty) return <QuestionModel>[];
+    return ref.watch(questionsByIdsProvider(bookmarkIds).future);
+  }
   final firestore = FirebaseFirestore.instance;
   final List<QuestionModel> questions = [];
   
@@ -334,6 +354,7 @@ final singleTestResultProvider = StreamProvider.family<TestResultModel?, String>
         } catch (hiveError) {
           debugPrint('Hive fallback failed in stream: $hiveError');
         }
+        return null;
       });
 });
 
@@ -384,6 +405,68 @@ final questionsByIdsProvider = FutureProvider.family<List<QuestionModel>, List<S
   });
 
   return results;
+});
+
+/// Streams all bookmarks for the logged-in user as a Set of question IDs for O(1) checks.
+final userBookmarksStreamProvider = StreamProvider<Set<String>>((ref) {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null || uid.isEmpty) {
+    return Stream.value(<String>{});
+  }
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('bookmarks')
+      .snapshots()
+      .map((snap) => snap.docs.map((doc) => doc.id).toSet());
+});
+
+/// O(1) provider to check if a specific question is bookmarked.
+final isBookmarkedProvider = Provider.family<bool, String>((ref, questionId) {
+  return ref.watch(userBookmarksStreamProvider).valueOrNull?.contains(questionId) ?? false;
+});
+
+/// Streams all bookmarks for the logged-in user ordered by bookmark time descending.
+final userBookmarkedQuestionIdsOrderedProvider = StreamProvider<List<String>>((ref) {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null || uid.isEmpty) {
+    return Stream.value(<String>[]);
+  }
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('bookmarks')
+      .orderBy('bookmarkedAt', descending: true)
+      .snapshots()
+      .map((snap) => snap.docs.map((doc) => doc.id).toList());
+});
+
+/// Streams a single Study Material document from Firestore by its ID.
+final singleStudyMaterialProvider = StreamProvider.family<Map<String, dynamic>?, String>((ref, materialId) {
+  return FirebaseFirestore.instance
+      .collection(AppConstants.studyMaterialsCollection)
+      .doc(materialId)
+      .snapshots()
+      .map((doc) => doc.exists ? doc.data() : null);
+});
+
+/// Streams all study material bookmarks for the logged-in user as a Set of material IDs for O(1) checks.
+final userMaterialBookmarksStreamProvider = StreamProvider<Set<String>>((ref) {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null || uid.isEmpty) {
+    return Stream.value(<String>{});
+  }
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('material_bookmarks')
+      .snapshots()
+      .map((snap) => snap.docs.map((doc) => doc.id).toSet());
+});
+
+/// O(1) provider to check if a specific study material is bookmarked.
+final isMaterialBookmarkedProvider = Provider.family<bool, String>((ref, materialId) {
+  return ref.watch(userMaterialBookmarksStreamProvider).valueOrNull?.contains(materialId) ?? false;
 });
 
 

@@ -7,6 +7,7 @@ import '../../../../core/language/language_provider.dart';
 import '../../../../shared/models/question_model.dart';
 import '../../../../shared/providers/firestore_providers.dart';
 import '../../../../shared/widgets/bilingual_text.dart';
+import '../../../../shared/providers/bookmark_actions.dart';
 
 class QuestionDetailScreen extends ConsumerStatefulWidget {
   final String questionId;
@@ -75,15 +76,18 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
 
         final optionsCount = question.optionsTamil.length;
 
+        final isBookmarked = ref.watch(isBookmarkedProvider(question.id));
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Question'),
             actions: [
               IconButton(
-                icon: const Icon(Icons.bookmark_border),
-                onPressed: () {
-                  // TODO(bookmarks): wire to bookmark toggle, see Prompt 7
-                },
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: isBookmarked ? AppColors.accentSaffron : null,
+                ),
+                onPressed: () => toggleBookmark(context, ref, question.id),
               ),
             ],
           ),

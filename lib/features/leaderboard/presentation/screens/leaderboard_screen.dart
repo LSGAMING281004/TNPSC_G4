@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/models/leaderboard_entry_model.dart';
@@ -185,7 +186,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> with Sing
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => context.go('/home/tests'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.accentSaffron,

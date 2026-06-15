@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TestAttemptModel {
   final String id;
   final String userId;
@@ -32,21 +34,60 @@ class TestAttemptModel {
   });
 
   factory TestAttemptModel.fromMap(Map<String, dynamic> map, String id) {
+    final startedStr = map['startedAt'] ?? map['attemptedAt'];
+    final completedStr = map['completedAt'] ?? map['attemptedAt'];
+    
+    DateTime started = DateTime.now();
+    if (startedStr != null) {
+      if (startedStr is Timestamp) {
+        started = startedStr.toDate();
+      } else {
+        started = DateTime.tryParse(startedStr.toString()) ?? DateTime.now();
+      }
+    }
+    
+    DateTime? completed;
+    if (completedStr != null) {
+      if (completedStr is Timestamp) {
+        completed = completedStr.toDate();
+      } else {
+        completed = DateTime.tryParse(completedStr.toString());
+      }
+    }
+
+    final correct = map['correctCount'] ?? map['correctAnswers'] ?? 0;
+    final incorrect = map['incorrectCount'] ?? map['wrongAnswers'] ?? 0;
+    final skipped = map['skippedCount'] ?? map['unattempted'] ?? 0;
+    
+    final Map<String, int> subScores = {};
+    if (map['subjectScores'] != null && map['subjectScores'] is Map) {
+      (map['subjectScores'] as Map).forEach((k, v) {
+        if (v is Map) {
+          final percentageVal = v['percentage'] ?? 0.0;
+          subScores[k.toString()] = (percentageVal is num) ? percentageVal.round() : 0;
+        } else if (v is num) {
+          subScores[k.toString()] = v.toInt();
+        }
+      });
+    }
+
     return TestAttemptModel(
       id: id,
       userId: map['userId'] ?? '',
       testId: map['testId'] ?? '',
-      startedAt: DateTime.parse(map['startedAt']),
-      completedAt: map['completedAt'] != null ? DateTime.parse(map['completedAt']) : null,
-      score: map['score']?.toInt() ?? 0,
+      startedAt: started,
+      completedAt: completed,
+      score: (map['score'] as num?)?.round() ?? 0,
       totalQuestions: map['totalQuestions']?.toInt() ?? 0,
-      correctCount: map['correctCount']?.toInt() ?? 0,
-      incorrectCount: map['incorrectCount']?.toInt() ?? 0,
-      skippedCount: map['skippedCount']?.toInt() ?? 0,
+      correctCount: (correct as num).toInt(),
+      incorrectCount: (incorrect as num).toInt(),
+      skippedCount: (skipped as num).toInt(),
       timeTakenSeconds: map['timeTakenSeconds']?.toInt() ?? 0,
-      subjectScores: Map<String, int>.from(map['subjectScores'] ?? {}),
-      answers: List<Map<String, dynamic>>.from(map['answers'] ?? []),
-      isCompleted: map['isCompleted'] ?? false,
+      subjectScores: subScores,
+      answers: map['answers'] is List 
+          ? List<Map<String, dynamic>>.from(map['answers'])
+          : [],
+      isCompleted: map['isCompleted'] ?? true,
     );
   }
 

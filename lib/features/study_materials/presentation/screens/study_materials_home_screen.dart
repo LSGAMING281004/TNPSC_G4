@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/providers/download_notifier.dart';
 
 class StudyMaterialsHomeScreen extends ConsumerWidget {
   const StudyMaterialsHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -25,7 +26,10 @@ class StudyMaterialsHomeScreen extends ConsumerWidget {
             ],
           ),
           actions: [
-            IconButton(icon: const Icon(Icons.download), onPressed: () {})
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: () => context.push('/download-manager'),
+            )
           ],
         ),
         body: const TabBarView(
@@ -48,7 +52,6 @@ class _SubjectMaterialsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final materialsAsync = ref.watch(studyMaterialsStreamProvider(subject));
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return materialsAsync.when(
       loading: () => const Center(
           child: CircularProgressIndicator(
@@ -94,7 +97,7 @@ class _SubjectMaterialsList extends ConsumerWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
               child: InkWell(
-                onTap: () {},
+                onTap: () => context.push('/study/${material['id']}'),
                 borderRadius: BorderRadius.circular(14),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -133,12 +136,41 @@ class _SubjectMaterialsList extends ConsumerWidget {
                         ),
                       ),
                       if (isDownloadable)
-                        IconButton(
-                          icon: const Icon(Icons.download_rounded,
-                              color: AppColors.accentSaffron),
-                          onPressed: () {
-                            // TODO: Read ref.read(pdfQualityProvider) to determine if we download from fileUrl (high) or fileUrlLow (low quality) if it exists.
-                          },
+                        Builder(
+                          builder: (context) {
+                            final progress = ref.watch(materialDownloadProgressProvider(material['id']));
+                            final isDownloaded = ref.watch(isMaterialDownloadedProvider(material['id']));
+
+                            if (progress != null) {
+                              return Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    value: progress,
+                                    strokeWidth: 2.5,
+                                    color: AppColors.accentSaffron,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return IconButton(
+                              icon: Icon(
+                                isDownloaded ? Icons.download_done : Icons.download_rounded,
+                                color: isDownloaded ? AppColors.success : AppColors.accentSaffron,
+                              ),
+                              onPressed: () {
+                                ref.read(activeDownloadsProvider.notifier).download(
+                                      context: context,
+                                      materialId: material['id'],
+                                      title: title,
+                                      fileUrl: fileUrl,
+                                    );
+                              },
+                            );
+                          }
                         )
                       else
                         Container(

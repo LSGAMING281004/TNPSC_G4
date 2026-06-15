@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -373,6 +374,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   // Clear downloaded_materials_box
                   final downloadedBox = Hive.box(AppConstants.downloadedMaterialsBox);
                   await downloadedBox.clear();
+
+                  // Delete downloaded files from disk
+                  try {
+                    final appDir = await getApplicationDocumentsDirectory();
+                    final downloadsDir = Directory('${appDir.path}/downloads');
+                    if (await downloadsDir.exists()) {
+                      await downloadsDir.delete(recursive: true);
+                    }
+                  } catch (_) {}
 
                   ref.invalidate(cacheSizeProvider);
 

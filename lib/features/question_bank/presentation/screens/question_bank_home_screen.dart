@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/question_model.dart';
 import '../../providers/question_bank_providers.dart';
+import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/providers/bookmark_actions.dart';
 
 class QuestionBankHomeScreen extends ConsumerStatefulWidget {
   const QuestionBankHomeScreen({super.key});
@@ -201,8 +203,7 @@ class _QuestionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookmarkedIds = ref.watch(bookmarksProvider);
-    final isBookmarked = bookmarkedIds.contains(question.id);
+    final isBookmarked = ref.watch(isBookmarkedProvider(question.id));
 
     final questionText = isTamil ? question.questionTamil : question.questionEnglish;
     final options = isTamil ? question.optionsTamil : question.optionsEnglish;
@@ -245,7 +246,7 @@ class _QuestionCard extends ConsumerWidget {
                 IconButton(
                   icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: isBookmarked ? const Color(0xFFE74C3C) : Colors.grey),
                   onPressed: () {
-                    ref.read(bookmarksProvider.notifier).toggleBookmark(question.id);
+                    toggleBookmark(context, ref, question.id);
                   },
                 ),
               ],

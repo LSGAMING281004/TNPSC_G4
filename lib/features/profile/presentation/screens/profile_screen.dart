@@ -16,6 +16,8 @@ import '../../../../core/providers/app_providers.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/app_dialogs.dart';
 import '../../../auth/providers/auth_providers.dart' hide currentUserProvider;
+import '../../../../core/language/language_provider.dart';
+import '../../../../core/language/language_mode.dart';
 
 class Achievement {
   final String id;
@@ -440,10 +442,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const Divider(height: 1),
           ListTile(
             title: const Text('Language'),
-            subtitle: const Text('English'),
+            subtitle: Text(ref.watch(languageNotifierProvider).displayName),
             leading: Icon(Icons.language, color: Theme.of(context).colorScheme.primary),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () => context.push('/settings'),
           ),
           const Divider(height: 1),
           SwitchListTile(

@@ -16,9 +16,12 @@ import '../../features/mock_tests/presentation/screens/test_result_screen.dart';
 import '../../features/mock_tests/presentation/screens/solution_screen.dart';
 import '../../features/study_materials/presentation/screens/study_materials_home_screen.dart';
 import '../../features/study_materials/presentation/screens/material_detail_screen.dart';
+import '../../features/study_materials/presentation/screens/download_manager_screen.dart';
 import '../../features/current_affairs/presentation/screens/current_affairs_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/question_bank/presentation/screens/question_bank_home_screen.dart';
+import '../../features/question_bank/presentation/screens/question_detail_screen.dart';
+import '../../features/question_bank/presentation/screens/bookmarked_questions_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
@@ -61,6 +64,8 @@ class AppRoutes {
   static const solutions = 'solutions';
   static const questionBank = 'question-bank';
   static const questionFilter = 'question-filter';
+  static const questionDetail = 'question-detail';
+  static const bookmarkedQuestions = 'bookmarked-questions';
   static const analytics = 'analytics';
   static const leaderboard = 'leaderboard';
   static const aiAssistant = 'ai-assistant';
@@ -72,6 +77,7 @@ class AppRoutes {
   static const previousPapers = 'previous-papers';
   static const audioBooks = 'audio-books';
   static const notifications = 'notifications';
+  static const downloadManager = 'download-manager';
   static const admin = 'admin';
 }
 
@@ -200,6 +206,24 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const Scaffold(body: Center(child: Text('Filter Screen'))), // Placeholder
           ),
         ]
+      ),
+      GoRoute(
+        path: '/question-detail',
+        name: AppRoutes.questionDetail,
+        builder: (context, state) {
+          final questionId = state.uri.queryParameters['questionId'] ?? '';
+          return QuestionDetailScreen(questionId: questionId);
+        },
+      ),
+      GoRoute(
+        path: '/bookmarked-questions',
+        name: AppRoutes.bookmarkedQuestions,
+        builder: (context, state) => const BookmarkedQuestionsScreen(),
+      ),
+      GoRoute(
+        path: '/download-manager',
+        name: AppRoutes.downloadManager,
+        builder: (context, state) => const DownloadManagerScreen(),
       ),
       GoRoute(
         path: '/analytics',

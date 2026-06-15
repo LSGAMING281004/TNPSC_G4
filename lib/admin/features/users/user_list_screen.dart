@@ -6,6 +6,7 @@ import '../../core/constants/admin_constants.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../shared/widgets/admin_empty_state.dart';
 import '../../shared/widgets/admin_shell.dart';
+import '../../../shared/utils/time_format.dart';
 
 final _fs = FirebaseFirestore.instance;
 
@@ -64,7 +65,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                     ])),
                     DataCell(Text(u['email'] ?? '—')),
                     DataCell(Text(createdAt != null ? DateFormat('MMM dd, yy').format(createdAt) : '—')),
-                    DataCell(Text(lastSeen != null ? _timeAgo(lastSeen) : '—', style: const TextStyle(fontSize: 12))),
+                    DataCell(Text(lastSeen != null ? formatTimeAgo(lastSeen) : '—', style: const TextStyle(fontSize: 12))),
                     DataCell(Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(color: (suspended ? AdminTheme.error : AdminTheme.success).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
@@ -94,13 +95,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
         SizedBox(width: 320, child: UserDetailDrawer(userId: _selectedUserId!, onClose: () => setState(() => _selectedUserId = null))),
       ],
     ]);
-  }
-
-  String _timeAgo(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
   }
 }
 
