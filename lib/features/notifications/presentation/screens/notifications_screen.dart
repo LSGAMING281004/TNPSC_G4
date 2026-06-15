@@ -27,9 +27,9 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(
             child: CircularProgressIndicator(
                 strokeWidth: 2, color: AppColors.accentSaffron)),
-        error: (_, __) => const Center(
+        error: (_, __) => Center(
             child: Text('Error loading notifications',
-                style: TextStyle(color: Colors.grey))),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)))),
         data: (notifications) {
           if (notifications.isEmpty) {
             return Center(
@@ -37,11 +37,11 @@ class NotificationsScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.notifications_none,
-                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300, size: 64),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3), size: 64),
                 const SizedBox(height: 12),
                 Text('No notifications yet',
                     style: TextStyle(
-                        color: isDark ? Colors.grey.shade400 : Colors.grey.shade500, fontSize: 16)),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 16)),
               ],
             ));
           }
@@ -103,14 +103,14 @@ class NotificationsScreen extends ConsumerWidget {
                           Text(body,
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           const SizedBox(height: 6),
                           Row(
                             children: [
                               Text(timeAgo,
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: isDark ? Colors.grey.shade500 : Colors.grey.shade400)),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4))),
                               if (status.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 Container(

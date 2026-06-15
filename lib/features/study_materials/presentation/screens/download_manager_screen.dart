@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/app_dialogs.dart';
 
 class DownloadManagerScreen extends StatelessWidget {
   const DownloadManagerScreen({super.key});
@@ -26,7 +27,22 @@ class DownloadManagerScreen extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                TextButton(onPressed: () {}, child: const Text('Clear All', style: TextStyle(color: AppColors.error))),
+                TextButton(
+                  onPressed: () async {
+                    final confirmed = await showConfirmDialog(
+                      context,
+                      title: 'Clear all downloads?',
+                      message: 'This will remove all downloaded files from your device.',
+                      confirmLabel: 'Clear All',
+                      isDestructive: true,
+                      icon: Icons.delete_sweep,
+                    );
+                    if (confirmed) {
+                      // Prompt 6 will wire the real logic
+                    }
+                  },
+                  child: const Text('Clear All', style: TextStyle(color: AppColors.error)),
+                ),
               ],
             ),
           ),
@@ -40,7 +56,23 @@ class DownloadManagerScreen extends StatelessWidget {
                   leading: const Icon(Icons.picture_as_pdf, color: AppColors.accentSaffron),
                   title: Text('Chapter ${i + 1} - Study Material'),
                   subtitle: Text('${(i + 1) * 5} MB • Downloaded on May ${20 + i}'),
-                  trailing: IconButton(icon: const Icon(Icons.delete_outline, color: AppColors.error), onPressed: () {}),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                    onPressed: () async {
+                      final title = 'Chapter ${i + 1} - Study Material';
+                      final confirmed = await showConfirmDialog(
+                        context,
+                        title: 'Delete Download?',
+                        message: 'Are you sure you want to delete "$title"?',
+                        confirmLabel: 'Delete',
+                        isDestructive: true,
+                        icon: Icons.delete_outline,
+                      );
+                      if (confirmed) {
+                        // Prompt 6 will wire the real logic
+                      }
+                    },
+                  ),
                 ),
               ),
             ),

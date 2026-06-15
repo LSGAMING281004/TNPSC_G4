@@ -1,16 +1,24 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/language/language_extension.dart';
 import '../../../../core/language/language_provider.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../shared/providers/app_providers.dart';
+import '../../../../core/services/push_notification_service.dart';
+import '../../../../core/router/app_router.dart';
+import '../../../auth/providers/auth_providers.dart';
 import '../widgets/language_settings_section.dart';
+import '../../../../shared/widgets/app_dialogs.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -25,9 +33,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // Local state for UI responsiveness before Hive sync
   String _fontSize = 'Medium';
-  bool _dailyReminder = true;
-  TimeOfDay _reminderTime = const TimeOfDay(hour: 8, minute: 0);
-  bool _examAlerts = true;
   int _questionsPerSession = 50;
   String _difficulty = 'Mixed';
   bool _timerSound = true;
@@ -42,13 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _initSettings() {
     _settingsBox = Hive.box('settings_box');
     _fontSize = _settingsBox.get('fontSize', defaultValue: 'Medium');
-    _dailyReminder = _settingsBox.get('dailyReminder', defaultValue: true);
-    
-    final storedHour = _settingsBox.get('reminderHour', defaultValue: 8);
-    final storedMinute = _settingsBox.get('reminderMinute', defaultValue: 0);
-    _reminderTime = TimeOfDay(hour: storedHour, minute: storedMinute);
-    
-    _examAlerts = _settingsBox.get('examAlerts', defaultValue: true);
     _questionsPerSession = _settingsBox.get('questionsPerSession', defaultValue: 50);
     _difficulty = _settingsBox.get('difficulty', defaultValue: 'Mixed');
     _timerSound = _settingsBox.get('timerSound', defaultValue: true);
@@ -69,40 +67,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickTime() async {
+    final box = ref.read(settingsBoxProvider);
+    final storedHour = box.get('reminder_hour', defaultValue: 8) as int;
+    final storedMinute = box.get('reminder_minute', defaultValue: 0) as int;
+    final initial = TimeOfDay(hour: storedHour, minute: storedMinute);
+    
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: _reminderTime,
+      initialTime: initial,
     );
     if (picked != null) {
-      setState(() => _reminderTime = picked);
-      _settingsBox.put('reminderHour', picked.hour);
-      _settingsBox.put('reminderMinute', picked.minute);
+      await box.put('reminder_hour', picked.hour);
+      await box.put('reminder_minute', picked.minute);
+      setState(() {});
     }
   }
 
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
     final messenger = ScaffoldMessenger.of(context);
-    if (await canLaunchUrl(uri)) {
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not open link')));
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text('Could not open link.')));
     }
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return '0.0 KB';
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(1)} ${suffixes[i]}';
   }
 
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    final isDarkMode = ref.watch(isDarkModeProvider);
     ref.watch(languageNotifierProvider); // Rebuild on language change
     final l10n = context.l10n;
 
-    final iconColor = isDarkMode ? AppColors.accentSaffron : AppColors.primaryNavy;
+    final iconColor = Theme.of(context).colorScheme.primary;
     final themeStr = switch (themeMode) {
       ThemeMode.light => 'Light',
       ThemeMode.dark => 'Dark',
       ThemeMode.system => 'System',
     };
+
+    // Watch providers for reactive updates
+    final dailyReminder = ref.watch(notifDailyReminderProvider);
+    final testAlerts = ref.watch(notifTestAlertsProvider);
+    final currentAffairs = ref.watch(notifCurrentAffairsProvider);
+    final pdfQuality = ref.watch(pdfQualityProvider);
+
+    final reminderHour = ref.watch(settingsBoxProvider).get('reminder_hour', defaultValue: 8) as int;
+    final reminderMinute = ref.watch(settingsBoxProvider).get('reminder_minute', defaultValue: 0) as int;
+    final reminderTime = TimeOfDay(hour: reminderHour, minute: reminderMinute);
+
+    final cacheSizeAsync = ref.watch(cacheSizeProvider);
+    final cacheSizeStr = cacheSizeAsync.when(
+      data: (bytes) => _formatBytes(bytes),
+      loading: () => 'Calculating...',
+      error: (_, __) => '0.0 KB',
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -172,34 +198,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SwitchListTile(
               title: const Text('Daily Study Reminder'),
               secondary: Icon(Icons.alarm, color: iconColor),
-              value: _dailyReminder,
+              value: dailyReminder,
               activeThumbColor: AppColors.accentSaffron,
               onChanged: (val) {
-                _dailyReminder = val;
-                _saveSetting('dailyReminder', val);
+                ref.read(notifDailyReminderProvider.notifier).state = val;
+                ref.read(settingsBoxProvider).put('notif_daily_reminder', val);
+                if (val) {
+                  PushNotificationService.subscribeToTopic('daily_reminder');
+                } else {
+                  PushNotificationService.unsubscribeFromTopic('daily_reminder');
+                }
               },
             ),
-            if (_dailyReminder) ...[
-              const Divider(height: 0),
-              ListTile(
-                leading: const Icon(Icons.access_time, color: Colors.transparent),
-                title: const Text('Reminder Time'),
-                trailing: Text(
-                  _reminderTime.format(context),
-                  style: const TextStyle(color: AppColors.accentSaffron, fontWeight: FontWeight.bold),
+            const Divider(height: 0),
+            ListTile(
+              enabled: dailyReminder,
+              leading: Icon(Icons.access_time, color: dailyReminder ? iconColor : Theme.of(context).disabledColor),
+              title: Text('Reminder Time', style: TextStyle(color: dailyReminder ? null : Theme.of(context).disabledColor)),
+              trailing: Text(
+                MaterialLocalizations.of(context).formatTimeOfDay(reminderTime),
+                style: TextStyle(
+                  color: dailyReminder ? AppColors.accentSaffron : Theme.of(context).disabledColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onTap: _pickTime,
               ),
-            ],
+              onTap: dailyReminder ? _pickTime : null,
+            ),
             const Divider(height: 0),
             SwitchListTile(
               title: const Text('Exam Countdown Alerts'),
               secondary: Icon(Icons.event, color: iconColor),
-              value: _examAlerts,
+              value: testAlerts,
               activeThumbColor: AppColors.accentSaffron,
               onChanged: (val) {
-                _examAlerts = val;
-                _saveSetting('examAlerts', val);
+                ref.read(notifTestAlertsProvider.notifier).state = val;
+                ref.read(settingsBoxProvider).put('notif_test_alerts', val);
+                if (val) {
+                  PushNotificationService.subscribeToTopic('test_alerts');
+                } else {
+                  PushNotificationService.unsubscribeFromTopic('test_alerts');
+                }
+              },
+            ),
+            const Divider(height: 0),
+            SwitchListTile(
+              title: const Text('Current Affairs Digest'),
+              secondary: Icon(Icons.newspaper, color: iconColor),
+              value: currentAffairs,
+              activeThumbColor: AppColors.accentSaffron,
+              onChanged: (val) {
+                ref.read(notifCurrentAffairsProvider.notifier).state = val;
+                ref.read(settingsBoxProvider).put('notif_current_affairs', val);
+                if (val) {
+                  PushNotificationService.subscribeToTopic('current_affairs');
+                } else {
+                  PushNotificationService.unsubscribeFromTopic('current_affairs');
+                }
               },
             ),
           ]),
@@ -251,6 +305,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _saveSetting('timerSound', val);
               },
             ),
+            const Divider(height: 0),
+            ListTile(
+              leading: Icon(Icons.picture_as_pdf, color: iconColor),
+              title: const Text('PDF Download Quality'),
+              trailing: DropdownButton<String>(
+                value: pdfQuality,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: 'high', child: Text('High')),
+                  DropdownMenuItem(value: 'low', child: Text('Low')),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    ref.read(pdfQualityProvider.notifier).state = val;
+                    ref.read(settingsBoxProvider).put('pdf_quality', val);
+                  }
+                },
+              ),
+            ),
           ]),
           const SizedBox(height: 24),
 
@@ -261,10 +334,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ListTile(
               leading: Icon(Icons.delete_sweep, color: iconColor),
               title: const Text('Clear Cache'),
+              trailing: Text(cacheSizeStr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               onTap: () async {
-                final messenger = ScaffoldMessenger.of(context);
-                await Hive.box('bookmarks_box').clear();
-                messenger.showSnackBar(const SnackBar(content: Text('Cache cleared successfully')));
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Clear Cache?'),
+                    content: const Text('Downloaded study materials and audio will need to be re-downloaded.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Clear', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  final bytesFreed = cacheSizeAsync.value ?? 0;
+                  final formattedFreed = _formatBytes(bytesFreed);
+
+                  // Clear temp dir
+                  try {
+                    final tempDir = await getTemporaryDirectory();
+                    if (await tempDir.exists()) {
+                      tempDir.listSync().forEach((entity) {
+                        try {
+                          entity.deleteSync(recursive: true);
+                        } catch (_) {}
+                      });
+                    }
+                  } catch (_) {}
+
+                  // Clear cacheBox
+                  await ref.read(cacheBoxProvider).clear();
+
+                  // Clear downloaded_materials_box
+                  final downloadedBox = Hive.box(AppConstants.downloadedMaterialsBox);
+                  await downloadedBox.clear();
+
+                  ref.invalidate(cacheSizeProvider);
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Cache cleared ($formattedFreed freed)')),
+                    );
+                  }
+                }
               },
             ),
             const Divider(height: 0),
@@ -279,18 +396,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
               title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Account?'),
-                    content: const Text('This action is irreversible and will delete all your data and progress.'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Delete', style: TextStyle(color: Colors.red))),
-                    ],
-                  ),
+              onTap: () async {
+                final confirmed = await showConfirmDialog(
+                  context,
+                  title: 'Delete Account?',
+                  message: 'This action is irreversible. All your progress, test attempts, bookmarks, and conversations will be permanently deleted.',
+                  confirmLabel: 'Proceed',
+                  isDestructive: true,
+                  icon: Icons.delete_forever,
                 );
+                if (confirmed && context.mounted) {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (ctx) => const _DeleteAccountDialog(),
+                  );
+                }
               },
             ),
           ]),
@@ -317,14 +438,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               leading: Icon(Icons.privacy_tip, color: iconColor),
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _launchURL('https://example.com/privacy'),
+              onTap: () => _launchURL(AppConstants.privacyUrl),
             ),
             const Divider(height: 0),
             ListTile(
               leading: Icon(Icons.description, color: iconColor),
               title: const Text('Terms of Service'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _launchURL('https://example.com/terms'),
+              onTap: () => _launchURL(AppConstants.termsUrl),
             ),
           ]),
           const SizedBox(height: 24),
@@ -336,19 +457,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ListTile(
               leading: const Icon(Icons.star, color: AppColors.accentSaffron),
               title: const Text('Rate Us'),
-              onTap: () => _launchURL('market://details?id=com.tnpsc.master'),
+              onTap: () => _launchURL('market://details?id=${AppConstants.playStoreId}'),
             ),
             const Divider(height: 0),
             ListTile(
               leading: Icon(Icons.share, color: iconColor),
               title: const Text('Share App'),
-              onTap: () => Share.share('Check out TNPSC Master 2026! It\'s amazing for exam prep. Download: https://example.com/app'),
+              onTap: () => Share.share('Check out Thiral - TNPSC Group 4 Master 2026! It\'s amazing for exam prep. Download: https://play.google.com/store/apps/details?id=${AppConstants.playStoreId}'),
             ),
             const Divider(height: 0),
             ListTile(
               leading: Icon(Icons.bug_report, color: iconColor),
               title: const Text('Report a Bug'),
-              onTap: () => _launchURL('mailto:support@example.com?subject=Bug Report: TNPSC Master $_appVersion'),
+              onTap: () => _launchURL('mailto:${AppConstants.supportEmail}?subject=Bug Report: Thiral $_appVersion'),
             ),
           ]),
           const SizedBox(height: 40),
@@ -383,6 +504,164 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       child: Column(children: children),
+    );
+  }
+}
+
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  bool _isLoading = false;
+  int _attempts = 0;
+  String? _errorMessage;
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleDelete() async {
+    final authRepo = ref.read(authRepositoryProvider);
+    final user = authRepo.currentUser;
+    if (user == null) {
+      Navigator.pop(context);
+      return;
+    }
+
+    if (_attempts >= 3) {
+      setState(() {
+        _errorMessage = 'Too many attempts, please try again later.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    showLoadingDialog(context, message: 'Deleting account...');
+
+    try {
+      final providers = user.providerData.map((p) => p.providerId).toList();
+      final isEmailUser = providers.contains('password');
+
+      String? password;
+      if (isEmailUser) {
+        password = _passwordController.text.trim();
+        if (password.isEmpty) {
+          throw Exception('Password is required to delete your account.');
+        }
+      }
+
+      await authRepo.deleteAccount(password: password);
+
+      if (mounted) {
+        hideLoadingDialog(context);
+        Navigator.pop(context); // close dialog
+        context.go(AppRoutes.login);
+      }
+    } catch (e) {
+      _attempts++;
+      if (mounted) {
+        hideLoadingDialog(context);
+      }
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString().replaceAll('Exception:', '').trim();
+        if (_attempts >= 3) {
+          _errorMessage = 'Too many attempts, please try again later.';
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authRepo = ref.read(authRepositoryProvider);
+    final user = authRepo.currentUser;
+    if (user == null) return const SizedBox.shrink();
+
+    final providers = user.providerData.map((p) => p.providerId).toList();
+    final isEmailUser = providers.contains('password');
+    final isGoogleUser = providers.contains('google.com');
+
+    return AlertDialog(
+      title: const Text('Delete Account?'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'This action is irreversible. All your progress, test attempts, bookmarks, and AI conversations will be permanently deleted.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            if (isEmailUser) ...[
+              const Text(
+                'Please enter your password to confirm:',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                enabled: !_isLoading && _attempts < 3,
+              ),
+              const SizedBox(height: 8),
+            ] else if (isGoogleUser) ...[
+              const Text(
+                'Confirming will prompt Google Re-Authentication.',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.accentSaffron),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (_errorMessage != null) ...[
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (_isLoading) ...[
+              const SizedBox(height: 12),
+              const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.accentSaffron,
+                ),
+              ),
+            ]
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: (_isLoading || _attempts >= 3) ? null : _handleDelete,
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
     );
   }
 }

@@ -149,5 +149,12 @@ service cloud.firestore {
       allow write: if isAuthenticated() &&
         request.resource.data.userId == request.auth.uid;
     }
+
+    // ─── Question Reports ───
+    match /question_reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+    }
   }
 }

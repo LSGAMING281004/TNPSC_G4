@@ -70,6 +70,7 @@ class TestResultModel {
   final Map<String, SubjectScore> subjectScores;
   final Map<String, String> answers; // questionId -> selectedOptionId
   final List<String> markedForReview;
+  final List<String> orderedQuestionIds;
   final int rank;
   final DateTime attemptedAt;
 
@@ -80,7 +81,7 @@ class TestResultModel {
     required this.unattempted, required this.score,
     required this.percentage, required this.timeTakenSeconds,
     this.subjectScores = const {}, this.answers = const {},
-    this.markedForReview = const [], this.rank = 0,
+    this.markedForReview = const [], this.orderedQuestionIds = const [], this.rank = 0,
     required this.attemptedAt,
   });
 
@@ -104,6 +105,7 @@ class TestResultModel {
       subjectScores: subjectScoresMap,
       answers: Map<String, String>.from(data['answers'] ?? {}),
       markedForReview: List<String>.from(data['markedForReview'] ?? []),
+      orderedQuestionIds: List<String>.from(data['orderedQuestionIds'] ?? []),
       rank: data['rank'] ?? 0,
       attemptedAt: (data['attemptedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -116,7 +118,8 @@ class TestResultModel {
     'score': score, 'percentage': percentage,
     'timeTakenSeconds': timeTakenSeconds,
     'subjectScores': subjectScores.map((k, v) => MapEntry(k, v.toMap())),
-    'answers': answers, 'markedForReview': markedForReview, 'rank': rank,
+    'answers': answers, 'markedForReview': markedForReview,
+    'orderedQuestionIds': orderedQuestionIds, 'rank': rank,
     'attemptedAt': Timestamp.fromDate(attemptedAt),
   };
 

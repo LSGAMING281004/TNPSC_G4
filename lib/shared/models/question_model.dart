@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class QuestionModel {
   final String id;
   final String questionTamil;
@@ -54,6 +56,10 @@ class QuestionModel {
   }
 
   factory QuestionModel.fromJson(Map<String, dynamic> json, [String? id]) => QuestionModel.fromMap(json, id ?? json['id'] ?? '');
+
+  factory QuestionModel.fromFirestore(DocumentSnapshot doc) {
+    return QuestionModel.fromMap(doc.data() as Map<String, dynamic>? ?? {}, doc.id);
+  }
 
   Map<String, dynamic> toJson() => toMap();
 

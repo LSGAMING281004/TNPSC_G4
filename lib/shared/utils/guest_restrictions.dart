@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
 import '../providers/app_providers.dart';
 
@@ -22,10 +21,10 @@ class GuestRestrictions {
       context: context,
       barrierDismissible: true,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.lock_outline, color: AppColors.accentSaffron, size: 28),
+            Icon(Icons.lock_outline, color: Theme.of(context).colorScheme.primary, size: 28),
             const SizedBox(width: 10),
             Text('Sign In Required', style: Theme.of(context).textTheme.titleLarge),
           ],
@@ -36,14 +35,17 @@ class GuestRestrictions {
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentSaffron,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
             onPressed: () {
               Navigator.pop(context);

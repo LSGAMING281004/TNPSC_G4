@@ -14,6 +14,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../shared/models/user_model.dart';
+import '../../../../shared/widgets/app_dialogs.dart';
 import '../../../auth/providers/auth_providers.dart' hide currentUserProvider;
 
 class Achievement {
@@ -220,7 +221,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(color: isDark ? AppColors.accentSaffron : AppColors.primaryNavy, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
                   child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
                 ),
               ),
@@ -261,8 +262,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       hint: const Text('Select District'),
                       isExpanded: true,
                       dropdownColor: isDark ? const Color(0xFF152A4A) : Colors.white,
-                      icon: Icon(Icons.arrow_drop_down, color: isDark ? Colors.white : AppColors.primaryNavy),
-                      style: TextStyle(color: isDark ? Colors.white : AppColors.primaryNavy, fontSize: 13, fontWeight: FontWeight.w500),
+                      icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 13, fontWeight: FontWeight.w500),
                       onChanged: (val) {
                         if (val != null) _updateDistrict(user.uid, val);
                       },
@@ -427,7 +428,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           SwitchListTile(
             title: const Text('Dark Mode'),
-            secondary: Icon(Icons.dark_mode, color: isDark ? AppColors.accentSaffron : AppColors.primaryNavy),
+            secondary: Icon(Icons.dark_mode, color: Theme.of(context).colorScheme.primary),
             value: isDark, // Wire to theme provider if exists
             onChanged: (val) {
               final mode = val ? ThemeMode.dark : ThemeMode.light;
@@ -440,14 +441,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ListTile(
             title: const Text('Language'),
             subtitle: const Text('English'),
-            leading: Icon(Icons.language, color: isDark ? AppColors.accentSaffron : AppColors.primaryNavy),
+            leading: Icon(Icons.language, color: Theme.of(context).colorScheme.primary),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {},
           ),
           const Divider(height: 1),
           SwitchListTile(
             title: const Text('Notifications'),
-            secondary: Icon(Icons.notifications, color: isDark ? AppColors.accentSaffron : AppColors.primaryNavy),
+            secondary: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary),
             value: true,
             onChanged: (val) {},
             activeThumbColor: AppColors.accentSaffron,
@@ -457,6 +458,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             title: const Text('Log Out'),
             leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onTap: () async {
+              final confirmed = await showConfirmDialog(
+                context,
+                title: 'Log Out?',
+                message: 'You will need to sign in again to access your progress.',
+                confirmLabel: 'Log Out',
+                isDestructive: true,
+                icon: Icons.logout,
+              );
+              if (!confirmed) return;
               await FirebaseAuth.instance.signOut();
               if (context.mounted) context.go('/login');
             },
@@ -465,18 +475,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ListTile(
             title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
             leading: const Icon(Icons.delete_forever, color: Colors.red),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Delete Account?'),
-                  content: const Text('This action is irreversible and will delete all your data and progress.'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Delete', style: TextStyle(color: Colors.red))),
-                  ],
-                ),
+            onTap: () async {
+              final confirmed = await showConfirmDialog(
+                context,
+                title: 'Delete Account?',
+                message: 'To delete your account securely, we will redirect you to Settings.',
+                confirmLabel: 'Go to Settings',
+                isDestructive: true,
+                icon: Icons.delete_forever,
               );
+              if (confirmed && context.mounted) {
+                context.push('/settings');
+              }
             },
           ),
         ],

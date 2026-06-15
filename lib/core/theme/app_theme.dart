@@ -13,17 +13,17 @@ class AppTheme {
 
   // ─── Shared Color Schemes ───
   static final ColorScheme _lightColorScheme = ColorScheme.fromSeed(
-    seedColor: _flameOrange,
-    primary: _flameOrange,
+    seedColor: _primaryNavy,
+    primary: _primaryNavy,
     secondary: _flameGold,
-    tertiary: _primaryNavy,
+    tertiary: _flameOrange,
     error: _error,
     surface: Colors.white,
     brightness: Brightness.light,
   );
 
   static final ColorScheme _darkColorScheme = ColorScheme.fromSeed(
-    seedColor: _flameOrange,
+    seedColor: _primaryNavy,
     primary: _flameOrange,
     secondary: _flameGold,
     tertiary: Colors.white,

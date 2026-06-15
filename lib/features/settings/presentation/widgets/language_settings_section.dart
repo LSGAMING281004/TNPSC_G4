@@ -137,8 +137,8 @@ class _LanguageOptionTile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (m) {
       case LanguageMode.tamil:   return AppColors.accentSaffronDark;
-      case LanguageMode.english: return isDark ? Colors.blue.shade400 : AppColors.primaryNavy;
-      case LanguageMode.both:    return AppColors.info;
+      case LanguageMode.english: return isDark ? AppColors.info : AppColors.primaryNavy;
+      case LanguageMode.both:    return AppColors.success;
     }
   }
 }

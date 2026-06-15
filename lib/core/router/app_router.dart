@@ -13,6 +13,7 @@ import '../../features/mock_tests/presentation/screens/mock_test_list_screen.dar
 // Note: Changed from TestEngineScreen/TestResultScreen to existing app routes if exact names differ, assuming placeholders if they don't exist
 import '../../features/mock_tests/presentation/screens/test_taking_screen.dart';
 import '../../features/mock_tests/presentation/screens/test_result_screen.dart';
+import '../../features/mock_tests/presentation/screens/solution_screen.dart';
 import '../../features/study_materials/presentation/screens/study_materials_home_screen.dart';
 import '../../features/study_materials/presentation/screens/material_detail_screen.dart';
 import '../../features/current_affairs/presentation/screens/current_affairs_screen.dart';
@@ -57,6 +58,7 @@ class AppRoutes {
   static const test = 'test';
   static const testTaking = 'test';
   static const testResult = 'test-result';
+  static const solutions = 'solutions';
   static const questionBank = 'question-bank';
   static const questionFilter = 'question-filter';
   static const analytics = 'analytics';
@@ -178,6 +180,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => TestResultScreen(
           resultId: state.pathParameters['attemptId'] ?? '',
         ),
+      ),
+      GoRoute(
+        path: '/solutions',
+        name: AppRoutes.solutions,
+        builder: (context, state) {
+          final resultId = state.uri.queryParameters['resultId'] ?? '';
+          return SolutionScreen(resultId: resultId);
+        },
       ),
       GoRoute(
         path: '/question-bank',

@@ -10,6 +10,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/config/secrets.dart';
 import '../../../../shared/providers/app_providers.dart';
+import '../../../../shared/widgets/app_dialogs.dart';
 
 class _ChatMessage {
   final String id;
@@ -145,19 +146,16 @@ class _AIAssistantScreenState extends ConsumerState<AIAssistantScreen> with Sing
   }
 
   Future<void> _clearConversation() async {
-    bool? confirm = await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Clear Conversation'),
-        content: const Text('Are you sure you want to delete all messages?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Clear', style: TextStyle(color: Colors.red))),
-        ],
-      ),
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Clear Conversation?',
+      message: 'Are you sure you want to delete all messages? This action cannot be undone.',
+      confirmLabel: 'Clear',
+      isDestructive: true,
+      icon: Icons.delete_outline,
     );
 
-    if (confirm != true) return;
+    if (!confirm) return;
 
     setState(() {
       _messages.clear();

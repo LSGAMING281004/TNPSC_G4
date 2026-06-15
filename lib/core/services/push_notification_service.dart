@@ -38,7 +38,29 @@ class PushNotificationService {
           debugPrint('User declined or has not accepted permission');
         }
       } catch (e) {
-        debugPrint('Error initializing FCM: \$e');
+        debugPrint('Error initializing FCM: $e');
+      }
+    }
+  }
+
+  static Future<void> subscribeToTopic(String topic) async {
+    if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
+      try {
+        await _fcm.subscribeToTopic(topic);
+        debugPrint('Subscribed to topic: $topic');
+      } catch (e) {
+        debugPrint('Error subscribing to topic $topic: $e');
+      }
+    }
+  }
+
+  static Future<void> unsubscribeFromTopic(String topic) async {
+    if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
+      try {
+        await _fcm.unsubscribeFromTopic(topic);
+        debugPrint('Unsubscribed from topic: $topic');
+      } catch (e) {
+        debugPrint('Error unsubscribing from topic $topic: $e');
       }
     }
   }

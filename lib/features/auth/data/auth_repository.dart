@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../shared/models/user_model.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -94,6 +95,63 @@ class AuthRepository {
     await Future.wait([
       _auth.signOut(),
       if (_googleSignIn.currentUser != null) _googleSignIn.signOut(),
+    ]);
+  }
+
+  Future<void> deleteAccount({String? password}) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    // 1. Re-authenticate if not anonymous
+    if (!user.isAnonymous) {
+      final providers = user.providerData.map((p) => p.providerId).toList();
+      if (providers.contains('google.com')) {
+        await user.reauthenticateWithProvider(GoogleAuthProvider());
+      } else if (password != null) {
+        final email = user.email;
+        if (email != null) {
+          final credential = EmailAuthProvider.credential(email: email, password: password);
+          await user.reauthenticateWithCredential(credential);
+        }
+      }
+    }
+
+    final uid = user.uid;
+
+    // 2. Delete Firestore collections
+    // Delete user doc
+    await _firestore.collection(AppConstants.usersCollection).doc(uid).delete();
+
+    // Delete test_attempts
+    final testAttempts = await _firestore
+        .collection('test_attempts')
+        .where('userId', isEqualTo: uid)
+        .get();
+    final batch = _firestore.batch();
+    for (var doc in testAttempts.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // Delete conversations
+    final conversations = await _firestore
+        .collection('conversations')
+        .where('userId', isEqualTo: uid)
+        .get();
+    for (var doc in conversations.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+
+    // 3. Delete Firebase User
+    await user.delete();
+
+    // 4. Clear Hive boxes
+    await Future.wait([
+      Hive.box(AppConstants.userBox).clear(),
+      Hive.box(AppConstants.settingsBox).clear(),
+      Hive.box(AppConstants.bookmarksBox).clear(),
+      Hive.box(AppConstants.cacheBox).clear(),
+      Hive.box(AppConstants.testResultsBox).clear(),
     ]);
   }
 }

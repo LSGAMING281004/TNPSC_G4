@@ -1,7 +1,9 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart' show Brightness, ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -45,20 +47,26 @@ final isDarkModeProvider = Provider<bool>((ref) {
   return themeMode == ThemeMode.dark;
 });
 
-final languageProvider = StateProvider<String>((ref) {
+final notifDailyReminderProvider = StateProvider<bool>((ref) {
   final box = Hive.box(AppConstants.settingsBox);
-  return box.get('language', defaultValue: 'both') as String;
+  return box.get('notif_daily_reminder', defaultValue: true) as bool;
 });
 
-final isTamilProvider = Provider<bool>((ref) {
-  final language = ref.watch(languageProvider);
-  return language == 'ta' || language == 'both';
+final notifTestAlertsProvider = StateProvider<bool>((ref) {
+  final box = Hive.box(AppConstants.settingsBox);
+  return box.get('notif_test_alerts', defaultValue: true) as bool;
 });
 
-final isEnglishProvider = Provider<bool>((ref) {
-  final language = ref.watch(languageProvider);
-  return language == 'en' || language == 'both';
+final notifCurrentAffairsProvider = StateProvider<bool>((ref) {
+  final box = Hive.box(AppConstants.settingsBox);
+  return box.get('notif_current_affairs', defaultValue: true) as bool;
 });
+
+final pdfQualityProvider = StateProvider<String>((ref) {
+  final box = Hive.box(AppConstants.settingsBox);
+  return box.get('pdf_quality', defaultValue: 'high') as String;
+});
+
 
 // ─── Hive Box Providers ───
 final userBoxProvider = Provider<Box>((ref) => Hive.box(AppConstants.userBox));
@@ -66,3 +74,35 @@ final settingsBoxProvider = Provider<Box>((ref) => Hive.box(AppConstants.setting
 final bookmarksBoxProvider = Provider<Box>((ref) => Hive.box(AppConstants.bookmarksBox));
 final cacheBoxProvider = Provider<Box>((ref) => Hive.box(AppConstants.cacheBox));
 final testResultsBoxProvider = Provider<Box>((ref) => Hive.box(AppConstants.testResultsBox));
+
+final cacheSizeProvider = FutureProvider<int>((ref) async {
+  int totalBytes = 0;
+  
+  // 1. Temp directory
+  try {
+    final tempDir = await getTemporaryDirectory();
+    totalBytes += await _getDirectorySize(tempDir);
+  } catch (_) {}
+
+  // 2. Cache directory
+  try {
+    final cacheDir = await getApplicationCacheDirectory();
+    totalBytes += await _getDirectorySize(cacheDir);
+  } catch (_) {}
+
+  return totalBytes;
+});
+
+Future<int> _getDirectorySize(Directory dir) async {
+  int total = 0;
+  try {
+    if (await dir.exists()) {
+      await for (final file in dir.list(recursive: true, followLinks: false)) {
+        if (file is File) {
+          total += await file.length();
+        }
+      }
+    }
+  } catch (_) {}
+  return total;
+}

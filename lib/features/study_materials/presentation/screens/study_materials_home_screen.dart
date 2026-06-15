@@ -16,8 +16,8 @@ class StudyMaterialsHomeScreen extends ConsumerWidget {
           title: const Text('Study Materials'),
           bottom: TabBar(
             indicatorColor: AppColors.accentSaffron,
-            labelColor: isDark ? Colors.white : AppColors.primaryNavy,
-            unselectedLabelColor: isDark ? Colors.white54 : Colors.grey.shade600,
+            labelColor: Theme.of(context).colorScheme.onSurface,
+            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
             tabs: const [
               Tab(text: 'Tamil'),
               Tab(text: 'General Studies'),
@@ -53,9 +53,9 @@ class _SubjectMaterialsList extends ConsumerWidget {
       loading: () => const Center(
           child: CircularProgressIndicator(
               strokeWidth: 2, color: AppColors.accentSaffron)),
-      error: (_, __) => const Center(
+      error: (_, __) => Center(
           child: Text('Error loading materials',
-              style: TextStyle(color: Colors.grey))),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)))),
       data: (materials) {
         if (materials.isEmpty) {
           return Center(
@@ -63,15 +63,15 @@ class _SubjectMaterialsList extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.menu_book_outlined,
-                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300, size: 64),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3), size: 64),
               const SizedBox(height: 12),
               Text('No materials available yet',
                   style:
-                      TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade500, fontSize: 16)),
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 16)),
               const SizedBox(height: 4),
               Text('Study materials will appear here once added',
                   style:
-                      TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, fontSize: 13)),
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)),
             ],
           ));
         }
@@ -128,7 +128,7 @@ class _SubjectMaterialsList extends ConsumerWidget {
                                 '${pages > 0 ? '$pages pages • ' : ''}${sizeMB > 0 ? '$sizeMB MB' : ''}',
                                 style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade500)),
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           ],
                         ),
                       ),
@@ -136,7 +136,9 @@ class _SubjectMaterialsList extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.download_rounded,
                               color: AppColors.accentSaffron),
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO: Read ref.read(pdfQualityProvider) to determine if we download from fileUrl (high) or fileUrlLow (low quality) if it exists.
+                          },
                         )
                       else
                         Container(

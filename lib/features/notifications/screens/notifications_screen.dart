@@ -47,10 +47,9 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
     final uid = ref.watch(currentUserProvider)?.uid;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey.shade50,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Notifications'),
         actions: [
@@ -63,16 +62,16 @@ class NotificationsScreen extends ConsumerWidget {
       ),
       body: notificationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentSaffron)),
-        error: (_, __) => const Center(child: Text('Error loading notifications', style: TextStyle(color: Colors.grey))),
+        error: (_, __) => Center(child: Text('Error loading notifications', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)))),
         data: (notifications) {
           if (notifications.isEmpty) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+                  Icon(Icons.notifications_none, size: 64, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
-                  Text('No notifications yet', style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade500, fontSize: 16)),
+                  Text('No notifications yet', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 16)),
                 ],
               ),
             );
@@ -100,10 +99,14 @@ class NotificationsScreen extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   tileColor: n.isRead ? Colors.transparent : AppColors.accentSaffron.withValues(alpha: 0.05),
                   leading: CircleAvatar(
-                    backgroundColor: n.isRead ? (isDark ? Colors.grey.shade800 : Colors.grey.shade200) : AppColors.accentSaffron.withValues(alpha: 0.2),
+                    backgroundColor: n.isRead
+                        ? Theme.of(context).colorScheme.surfaceContainerHighest
+                        : AppColors.accentSaffron.withValues(alpha: 0.2),
                     child: Icon(
                       _getIconForType(n.type),
-                      color: n.isRead ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : AppColors.accentSaffron,
+                      color: n.isRead
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : AppColors.accentSaffron,
                       size: 20,
                     ),
                   ),
@@ -111,7 +114,9 @@ class NotificationsScreen extends ConsumerWidget {
                     n.title,
                     style: TextStyle(
                       fontWeight: n.isRead ? FontWeight.normal : FontWeight.bold,
-                      color: n.isRead ? (isDark ? Colors.grey.shade400 : Colors.grey.shade800) : (isDark ? Colors.white : Colors.black),
+                      color: n.isRead
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                     ),
                   ),
@@ -119,11 +124,21 @@ class NotificationsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text(n.body, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13)),
+                      Text(
+                        n.body,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 13),
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         DateFormat('MMM d, h:mm a').format(n.createdAt),
-                        style: TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey.shade400, fontSize: 10),
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.4),
+                            fontSize: 10),
                       ),
                     ],
                   ),
