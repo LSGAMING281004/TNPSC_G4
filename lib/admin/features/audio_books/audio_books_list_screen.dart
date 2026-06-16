@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_constants.dart';
+
 import '../../../shared/models/audio_book_model.dart';
 import '../../core/theme/admin_theme.dart';
 import '../../shared/widgets/admin_shell.dart';
@@ -309,20 +309,11 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
     );
     if (confirmed == true) {
       try {
-        final prefix = '${AppConstants.supabaseUrl}/storage/v1/object/public/${AppConstants.supabaseMediaBucket}/';
-        final filesToDelete = <String>[];
-        
-        if (book.audioUrl.startsWith(prefix)) {
-          filesToDelete.add(book.audioUrl.replaceFirst(prefix, ''));
+        if (book.audioUrl.isNotEmpty) {
+          try { await FirebaseStorage.instance.refFromURL(book.audioUrl).delete(); } catch (_) {}
         }
-        if (book.coverImageUrl != null && book.coverImageUrl!.startsWith(prefix)) {
-          filesToDelete.add(book.coverImageUrl!.replaceFirst(prefix, ''));
-        }
-
-        if (filesToDelete.isNotEmpty) {
-          await Supabase.instance.client.storage
-              .from(AppConstants.supabaseMediaBucket)
-              .remove(filesToDelete);
+        if (book.coverImageUrl != null && book.coverImageUrl!.isNotEmpty) {
+          try { await FirebaseStorage.instance.refFromURL(book.coverImageUrl!).delete(); } catch (_) {}
         }
       } catch (_) {}
 

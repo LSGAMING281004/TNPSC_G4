@@ -1,5 +1,3 @@
-import '../config/secrets.dart';
-
 /// Application-wide constants for TNPSC Group 4 Master 2026
 class AppConstants {
   AppConstants._();
@@ -20,10 +18,8 @@ class AppConstants {
   static const String privacyUrl      = 'https://thiral.app/privacy';
   static const String termsUrl        = 'https://thiral.app/terms';
 
-  // Supabase Configuration (loaded from .env via AppSecrets)
-  static String get supabaseUrl => AppSecrets.supabaseUrl;
-  static String get supabaseAnonKey => AppSecrets.supabaseAnonKey;
-  static const String supabaseMediaBucket = 'media';
+  // Firebase Storage bucket path prefix for media uploads
+  static const String mediaStoragePath = 'media';
 
   // Exam Info
   static final DateTime examDate = DateTime(2026, 12, 15); // Update when official date released

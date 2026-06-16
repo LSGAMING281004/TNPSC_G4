@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/models/audio_book_model.dart';
@@ -377,17 +377,13 @@ class _AddEditAudioBookScreenState
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       final fullPath = '$storagePath/$fileName';
 
-      await Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .uploadBinary(
-            fullPath,
-            file.bytes!,
-            fileOptions: const FileOptions(upsert: true),
-          );
+      final storageRef = FirebaseStorage.instance.ref('${AppConstants.mediaStoragePath}/$fullPath');
+      await storageRef.putData(
+        file.bytes!,
+        SettableMetadata(contentType: _getContentType(file.name)),
+      );
 
-      final url = Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .getPublicUrl(fullPath);
+      final url = await storageRef.getDownloadURL();
 
       onDone(url);
     } catch (e) {
@@ -462,5 +458,19 @@ class _AddEditAudioBookScreenState
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _getContentType(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'mp3' => 'audio/mpeg',
+      'm4a' => 'audio/mp4',
+      'aac' => 'audio/aac',
+      'wav' => 'audio/wav',
+      'png' => 'image/png',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      'webp' => 'image/webp',
+      _ => 'application/octet-stream',
+    };
   }
 }

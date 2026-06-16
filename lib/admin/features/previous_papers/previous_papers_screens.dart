@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
@@ -65,9 +65,7 @@ class _PreviousPapersScreenState extends ConsumerState<PreviousPapersScreen> {
                   onPressed: () async {
                     if (p['storageRef'] != null) {
                       try {
-                        await Supabase.instance.client.storage
-                            .from(AppConstants.supabaseMediaBucket)
-                            .remove([p['storageRef']]);
+                        await FirebaseStorage.instance.ref(p['storageRef']).delete();
                       } catch (_) {}
                     }
                     await _fs.collection(AdminConstants.previousPapersCollection).doc(p['id']).delete();
@@ -114,19 +112,14 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
     if (!_formKey.currentState!.validate() || _pdf == null) return;
     setState(() => _uploading = true);
     try {
-      final path = '${AdminConstants.previousPapersPath}/$_year/${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final path = '${AppConstants.mediaStoragePath}/${AdminConstants.previousPapersPath}/$_year/${DateTime.now().millisecondsSinceEpoch}.pdf';
       
-      await Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .uploadBinary(
-            path,
-            _pdf!.bytes!,
-            fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
-          );
-          
-      final url = Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .getPublicUrl(path);
+      final storageRef = FirebaseStorage.instance.ref(path);
+      await storageRef.putData(
+        _pdf!.bytes!,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
+      final url = await storageRef.getDownloadURL();
           
       await _fs.collection(AdminConstants.previousPapersCollection).add({
         'year': _year, 'subject': _subject, 'part': _part,

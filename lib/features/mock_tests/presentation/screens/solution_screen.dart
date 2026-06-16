@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/language/language_provider.dart';
-import '../../../../shared/models/question_model.dart';
+
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/providers/firestore_providers.dart';
 import '../../../../shared/widgets/bilingual_text.dart';
 import '../../../../shared/widgets/app_dialogs.dart';
-import '../../data/models/mock_test_models.dart';
+
 
 class SolutionScreen extends ConsumerStatefulWidget {
   final String resultId;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -83,9 +83,7 @@ class _MaterialsListScreenState extends ConsumerState<MaterialsListScreen> {
     if (ok == true) {
       if (m.storageRef.isNotEmpty) {
         try { 
-          await Supabase.instance.client.storage
-              .from(AppConstants.supabaseMediaBucket)
-              .remove([m.storageRef]);
+          await FirebaseStorage.instance.ref(m.storageRef).delete();
         } catch (_) {}
       }
       await _fs.collection(AdminConstants.studyMaterialsCollection).doc(m.id).delete();
@@ -122,19 +120,14 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
     if (!_formKey.currentState!.validate() || _file == null) return;
     setState(() { _uploading = true; });
     try {
-      final storagePath = '${AdminConstants.studyMaterialsPath}/$_subject/$_chapter/${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final storagePath = '${AppConstants.mediaStoragePath}/${AdminConstants.studyMaterialsPath}/$_subject/$_chapter/${DateTime.now().millisecondsSinceEpoch}.pdf';
       
-      await Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .uploadBinary(
-            storagePath,
-            _file!.bytes!,
-            fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
-          );
-          
-      final url = Supabase.instance.client.storage
-          .from(AppConstants.supabaseMediaBucket)
-          .getPublicUrl(storagePath);
+      final ref = FirebaseStorage.instance.ref(storagePath);
+      await ref.putData(
+        _file!.bytes!,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
+      final url = await ref.getDownloadURL();
 
       await _fs.collection(AdminConstants.studyMaterialsCollection).add(StudyMaterialModel(
         titleTa: _titleTa, titleEn: _titleEn, descTa: _descTa, descEn: _descEn,

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/router/app_router.dart';
+
 import '../../../../shared/providers/firestore_providers.dart';
-import '../../data/models/mock_test_models.dart';
+
 
 class TestResultScreen extends ConsumerWidget {
   final String resultId;
