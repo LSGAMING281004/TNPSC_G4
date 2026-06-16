@@ -14,19 +14,71 @@ class AdminUsersScreen extends StatelessWidget {
     });
   }
 
+  void _viewUserHistory(BuildContext context, String uid, String userName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        child: SizedBox(
+          width: 500,
+          height: 500,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Test History — $userName',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                  .collection('test_attempts')
+                  .where('userId', isEqualTo: uid)
+                  .orderBy('completedAt', descending: true)
+                  .limit(20)
+                  .snapshots(),
+                builder: (ctx, snap) {
+                  if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                  final docs = snap.data!.docs;
+                  if (docs.isEmpty) return const Center(child: Text('No test history found.'));
+                  return ListView.builder(
+                    itemCount: docs.length,
+                    itemBuilder: (ctx, i) {
+                      final d = docs[i].data() as Map<String, dynamic>;
+                      final date = (d['completedAt'] as Timestamp?)?.toDate();
+                      return ListTile(
+                        title: Text(d['testTitle'] ?? 'Test'),
+                        subtitle: Text(date != null ? DateFormat('MMM d, yyyy – h:mm a').format(date) : 'Unknown date'),
+                        trailing: Text('${d['score'] ?? 0}/${d['totalQuestions'] ?? 0}',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? const Color(0xFF0B1E36) : Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('User Management', style: TextStyle(color: AppColors.primaryNavy, fontWeight: FontWeight.bold)),
+        title: Text('User Management', style: TextStyle(color: isDark ? Colors.white : AppColors.primaryNavy, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Container(
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
+          decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('users').orderBy('createdAt', descending: true).snapshots(),
             builder: (context, snapshot) {
@@ -39,7 +91,7 @@ class AdminUsersScreen extends StatelessWidget {
                 columnSpacing: 12,
                 horizontalMargin: 24,
                 minWidth: 1000,
-                headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
+                headingRowColor: WidgetStateProperty.all(isDark ? Colors.grey.shade900 : Colors.grey.shade50),
                 columns: const [
                   DataColumn2(label: Text('Name / Email'), size: ColumnSize.L),
                   DataColumn2(label: Text('Join Date'), size: ColumnSize.M),
@@ -87,7 +139,7 @@ class AdminUsersScreen extends StatelessWidget {
                           IconButton(
                             icon: const Icon(Icons.history, size: 20, color: Colors.blue),
                             tooltip: 'View History',
-                            onPressed: () {},
+                            onPressed: () => _viewUserHistory(context, doc.id, data['name'] ?? 'Unknown'),
                           ),
                         ],
                       )),

@@ -51,10 +51,11 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? const Color(0xFF0B1E36) : Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Broadcast Notification', style: TextStyle(color: AppColors.primaryNavy, fontWeight: FontWeight.bold)),
+        title: Text('Broadcast Notification', style: TextStyle(color: isDark ? Colors.white : AppColors.primaryNavy, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -64,7 +65,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 600),
             padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
             child: Form(
               key: _formKey,
               child: Column(
@@ -90,7 +91,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _type,
+                          value: _type,
                           decoration: const InputDecoration(labelText: 'Tap Action (Type)', border: OutlineInputBorder()),
                           items: _types.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                           onChanged: (v) => setState(() => _type = v!),
@@ -99,7 +100,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _target,
+                          value: _target,
                           decoration: const InputDecoration(labelText: 'Target Audience', border: OutlineInputBorder()),
                           items: const [
                             DropdownMenuItem(value: 'all_users', child: Text('All Users')),

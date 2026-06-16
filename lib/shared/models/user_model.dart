@@ -18,6 +18,8 @@ class UserModel {
   final bool isAnonymous;
   final bool isPremium;
   final String? fcmToken;
+  final bool isAdmin;
+  final bool isBanned;
 
   int get totalPoints => totalScore;
   double get accuracy {
@@ -45,6 +47,8 @@ class UserModel {
     this.isAnonymous = false,
     this.isPremium = false,
     this.fcmToken,
+    this.isAdmin = false,
+    this.isBanned = false,
   });
 
   UserModel copyWith({
@@ -65,6 +69,8 @@ class UserModel {
     bool? isAnonymous,
     bool? isPremium,
     String? fcmToken,
+    bool? isAdmin,
+    bool? isBanned,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -84,6 +90,8 @@ class UserModel {
       isAnonymous: isAnonymous ?? this.isAnonymous,
       isPremium: isPremium ?? this.isPremium,
       fcmToken: fcmToken ?? this.fcmToken,
+      isAdmin: isAdmin ?? this.isAdmin,
+      isBanned: isBanned ?? this.isBanned,
     );
   }
 
@@ -106,6 +114,8 @@ class UserModel {
       'isAnonymous': isAnonymous,
       'isPremium': isPremium,
       'fcmToken': fcmToken,
+      'isAdmin': isAdmin,
+      'isBanned': isBanned,
     };
   }
 
@@ -128,6 +138,8 @@ class UserModel {
       isAnonymous: map['isAnonymous'] ?? false,
       isPremium: map['isPremium'] ?? false,
       fcmToken: map['fcmToken'],
+      isAdmin: map['isAdmin'] ?? false,
+      isBanned: map['isBanned'] ?? false,
     );
   }
 }

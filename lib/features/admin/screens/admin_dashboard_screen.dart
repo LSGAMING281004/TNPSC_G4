@@ -3,8 +3,71 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  List<FlSpot> _userGrowthSpots = [];
+  bool _loadingChart = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserGrowthData();
+  }
+
+  Future<void> _loadUserGrowthData() async {
+    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('createdAt', isGreaterThan: Timestamp.fromDate(thirtyDaysAgo))
+        .orderBy('createdAt')
+        .get();
+
+    final Map<int, int> dayCounts = {};
+    for (final doc in snapshot.docs) {
+      final createdAt = (doc['createdAt'] as Timestamp?)?.toDate();
+      if (createdAt == null) continue;
+      final dayIndex = DateTime.now().difference(createdAt).inDays;
+      final reversedDay = 30 - dayIndex;
+      dayCounts[reversedDay] = (dayCounts[reversedDay] ?? 0) + 1;
+    }
+
+    int cumulative = 0;
+    final spots = <FlSpot>[];
+    for (int day = 0; day <= 30; day++) {
+      cumulative += dayCounts[day] ?? 0;
+      spots.add(FlSpot(day.toDouble(), cumulative.toDouble()));
+    }
+
+    if (mounted) setState(() { _userGrowthSpots = spots; _loadingChart = false; });
+  }
+
+  Future<void> _refreshStats() async {
+    final usersCount = await FirebaseFirestore.instance.collection('users').count().get();
+    final questionsCount = await FirebaseFirestore.instance.collection('questions').count().get();
+    final attemptsCount = await FirebaseFirestore.instance.collection('test_attempts').count().get();
+    
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final activeToday = await FirebaseFirestore.instance.collection('users')
+      .where('lastActiveAt', isGreaterThan: Timestamp.fromDate(todayStart))
+      .count().get();
+
+    await FirebaseFirestore.instance.collection('analytics_summary').doc('daily').set({
+      'totalUsers': usersCount.count,
+      'totalQuestions': questionsCount.count,
+      'totalAttempts': attemptsCount.count,
+      'todayActiveUsers': activeToday.count,
+      'lastUpdated': FieldValue.serverTimestamp(),
+    });
+
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Stats refreshed!')));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +78,17 @@ class AdminDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Dashboard Overview', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Dashboard Overview', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+                ElevatedButton.icon(
+                  onPressed: _refreshStats,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Refresh Stats'),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             _buildStatsRow(),
             const SizedBox(height: 32),
@@ -112,10 +185,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 100), FlSpot(5, 120), FlSpot(10, 150), FlSpot(15, 200),
-                      FlSpot(20, 280), FlSpot(25, 350), FlSpot(30, 450),
-                    ],
+                    spots: _loadingChart ? const [FlSpot(0, 0)] : (_userGrowthSpots.isEmpty ? const [FlSpot(0, 0)] : _userGrowthSpots),
                     isCurved: true,
                     color: AppColors.accentSaffron,
                     barWidth: 4,

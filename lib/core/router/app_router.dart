@@ -34,12 +34,16 @@ import '../../features/admin/screens/admin_questions_screen.dart';
 import '../../features/admin/screens/admin_current_affairs_screen.dart';
 import '../../features/admin/screens/admin_users_screen.dart';
 import '../../features/admin/screens/admin_notifications_screen.dart';
+import '../../features/admin/screens/admin_tests_screen.dart';
 
 import '../../features/auth/providers/auth_providers.dart';
 import '../../shared/widgets/main_shell_screen.dart';
 
-// Dummy providers for Auth Guard - Replace with actual Firebase Auth providers
-final isAdminProvider = StateProvider<bool>((ref) => false);
+// Providers for Auth Guard
+final isAdminProvider = Provider<bool>((ref) {
+  final userModel = ref.watch(userModelProvider).value;
+  return userModel?.isAdmin ?? false;
+});
 final isFirstLaunchProvider = StateProvider<bool>((ref) => false);
 
 /// Named routes for the application
@@ -309,6 +313,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/notifications',
             builder: (context, state) => const AdminNotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/admin/tests',
+            builder: (context, state) => const AdminTestsScreen(),
           ),
         ],
       ),

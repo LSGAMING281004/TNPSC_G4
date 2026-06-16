@@ -13,8 +13,9 @@ class AdminScaffold extends StatelessWidget {
   int _getSelectedIndex() {
     if (currentLocation.contains('/admin/questions')) return 1;
     if (currentLocation.contains('/admin/current_affairs')) return 2;
-    if (currentLocation.contains('/admin/users')) return 3;
-    if (currentLocation.contains('/admin/notifications')) return 4;
+    if (currentLocation.contains('/admin/tests')) return 3;
+    if (currentLocation.contains('/admin/users')) return 4;
+    if (currentLocation.contains('/admin/notifications')) return 5;
     return 0; // dashboard
   }
 
@@ -30,9 +31,12 @@ class AdminScaffold extends StatelessWidget {
         context.go('/admin/current_affairs');
         break;
       case 3:
-        context.go('/admin/users');
+        context.go('/admin/tests');
         break;
       case 4:
+        context.go('/admin/users');
+        break;
+      case 5:
         context.go('/admin/notifications');
         break;
     }
@@ -98,6 +102,7 @@ class AdminScaffold extends StatelessWidget {
                 NavigationRailDestination(icon: Icon(Icons.dashboard), label: Text('Dashboard')),
                 NavigationRailDestination(icon: Icon(Icons.library_books), label: Text('Questions')),
                 NavigationRailDestination(icon: Icon(Icons.public), label: Text('Current Affairs')),
+                NavigationRailDestination(icon: Icon(Icons.assignment), label: Text('Tests')),
                 NavigationRailDestination(icon: Icon(Icons.people), label: Text('Users')),
                 NavigationRailDestination(icon: Icon(Icons.notifications), label: Text('Notifications')),
               ],
@@ -127,8 +132,9 @@ class AdminScaffold extends StatelessWidget {
           _drawerItem(context, 0, Icons.dashboard, 'Dashboard'),
           _drawerItem(context, 1, Icons.library_books, 'Questions'),
           _drawerItem(context, 2, Icons.public, 'Current Affairs'),
-          _drawerItem(context, 3, Icons.people, 'Users'),
-          _drawerItem(context, 4, Icons.notifications, 'Notifications'),
+          _drawerItem(context, 3, Icons.assignment, 'Tests'),
+          _drawerItem(context, 4, Icons.people, 'Users'),
+          _drawerItem(context, 5, Icons.notifications, 'Notifications'),
         ],
       ),
     );

@@ -144,14 +144,14 @@ class _AdminCurrentAffairsScreenState extends State<AdminCurrentAffairsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           DropdownButtonFormField<String>(
-                            initialValue: _category,
+                            value: _category,
                             decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
                             items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: (v) => setState(() => _category = v!),
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            initialValue: _importance,
+                            value: _importance,
                             decoration: const InputDecoration(labelText: 'Importance', border: OutlineInputBorder()),
                             items: const [
                               DropdownMenuItem(value: 'high', child: Text('High')),
