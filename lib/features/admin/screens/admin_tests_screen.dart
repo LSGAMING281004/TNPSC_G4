@@ -139,7 +139,7 @@ class AdminTestsScreen extends StatelessWidget {
                 decoration: const InputDecoration(labelText: 'Test Name', border: OutlineInputBorder())),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: subject,
+                initialValue: subject,
                 decoration: const InputDecoration(labelText: 'Subject', border: OutlineInputBorder()),
                 items: ['General Studies', 'General Tamil', 'Aptitude & Mental Ability', 'All Subjects']
                   .map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),

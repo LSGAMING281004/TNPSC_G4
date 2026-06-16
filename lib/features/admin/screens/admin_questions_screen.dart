@@ -125,7 +125,7 @@ class _AdminQuestionsScreenState extends State<AdminQuestionsScreen> {
                     keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: difficulty,
+                    initialValue: difficulty,
                     decoration: const InputDecoration(labelText: 'Difficulty', border: OutlineInputBorder()),
                     items: ['easy', 'medium', 'hard']
                       .map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),

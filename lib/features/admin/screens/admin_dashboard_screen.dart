@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,38 +13,51 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<FlSpot> _userGrowthSpots = [];
   bool _loadingChart = true;
+  StreamSubscription? _growthSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadUserGrowthData();
+    _listenToUserGrowth();
   }
 
-  Future<void> _loadUserGrowthData() async {
+  @override
+  void dispose() {
+    _growthSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToUserGrowth() {
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
-    final snapshot = await FirebaseFirestore.instance
+    _growthSubscription = FirebaseFirestore.instance
         .collection('users')
         .where('createdAt', isGreaterThan: Timestamp.fromDate(thirtyDaysAgo))
         .orderBy('createdAt')
-        .get();
+        .snapshots()
+        .listen((snapshot) {
+      final Map<int, int> dayCounts = {};
+      for (final doc in snapshot.docs) {
+        final createdAt = (doc['createdAt'] as Timestamp?)?.toDate();
+        if (createdAt == null) continue;
+        final dayIndex = DateTime.now().difference(createdAt).inDays;
+        final reversedDay = 30 - dayIndex;
+        dayCounts[reversedDay] = (dayCounts[reversedDay] ?? 0) + 1;
+      }
 
-    final Map<int, int> dayCounts = {};
-    for (final doc in snapshot.docs) {
-      final createdAt = (doc['createdAt'] as Timestamp?)?.toDate();
-      if (createdAt == null) continue;
-      final dayIndex = DateTime.now().difference(createdAt).inDays;
-      final reversedDay = 30 - dayIndex;
-      dayCounts[reversedDay] = (dayCounts[reversedDay] ?? 0) + 1;
-    }
+      int cumulative = 0;
+      final spots = <FlSpot>[];
+      for (int day = 0; day <= 30; day++) {
+        cumulative += dayCounts[day] ?? 0;
+        spots.add(FlSpot(day.toDouble(), cumulative.toDouble()));
+      }
 
-    int cumulative = 0;
-    final spots = <FlSpot>[];
-    for (int day = 0; day <= 30; day++) {
-      cumulative += dayCounts[day] ?? 0;
-      spots.add(FlSpot(day.toDouble(), cumulative.toDouble()));
-    }
-
-    if (mounted) setState(() { _userGrowthSpots = spots; _loadingChart = false; });
+      if (mounted) {
+        setState(() {
+          _userGrowthSpots = spots;
+          _loadingChart = false;
+        });
+      }
+    });
   }
 
   Future<void> _refreshStats() async {
@@ -65,8 +79,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       'lastUpdated': FieldValue.serverTimestamp(),
     });
 
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stats refreshed!')));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stats refreshed!')),
+      );
+    }
   }
 
   @override
