@@ -151,13 +151,18 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossCount = constraints.maxWidth > 900 ? 4 : 2;
+        final double spacing = 12.0;
+        final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
+        final double cardHeight = 150.0;
+        final ratio = cardWidth / cardHeight;
+
         return GridView.count(
           crossAxisCount: crossCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 2.5,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          childAspectRatio: ratio,
           children: [
             AdminStatCard(
               label: 'Total Audio Books',

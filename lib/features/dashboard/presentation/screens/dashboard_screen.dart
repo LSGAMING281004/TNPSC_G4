@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../auth/providers/auth_providers.dart';
 import '../providers/dashboard_providers.dart';
+import '../../../current_affairs/providers/current_affairs_providers.dart';
+import '../../../../shared/providers/firestore_providers.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -62,13 +64,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Badge(
-                          label: Text('3'),
-                          child: Icon(Icons.notifications_outlined, size: 28),
-                        ),
-                        onPressed: () => context.push('/notifications'),
-                      ),
+                      (() {
+                        final unreadCount = ref.watch(unreadNotificationsCountProvider);
+                        if (unreadCount > 0) {
+                          return IconButton(
+                            icon: Badge(
+                              label: Text('$unreadCount'),
+                              child: const Icon(Icons.notifications_outlined, size: 28),
+                            ),
+                            onPressed: () => context.push('/notifications'),
+                          );
+                        } else {
+                          return IconButton(
+                            icon: const Icon(Icons.notifications_outlined, size: 28),
+                            onPressed: () => context.push('/notifications'),
+                          );
+                        }
+                      })(),
                       const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () => context.go('/home/profile'),
@@ -162,10 +174,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.tertiary, // primaryNavy
-            Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.8), // dark blue
+            Color(0xFF0B1E36), // primaryNavy
+            Color(0xFF152A4A), // slightly lighter navy
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -173,7 +185,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.3),
+            color: const Color(0xFF0B1E36).withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -373,7 +385,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           titleTa: 'நடப்பு நிகழ்வுகள்',
           color: const Color(0xFFE74C3C), // Error Red
           onTap: () => context.go('/home/current'),
-          badge: '3',
+          badge: ref.watch(newCurrentAffairsCountProvider).maybeWhen(
+                data: (count) => count > 0 ? '$count' : null,
+                orElse: () => null,
+              ),
         ),
       ],
     );
@@ -579,9 +594,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _LeaderboardPodium(user: data.topUsers[1], rank: 2, height: 80, color: Colors.grey.shade400),
-                    _LeaderboardPodium(user: data.topUsers[0], rank: 1, height: 100, color: const Color(0xFFF5C518)),
-                    _LeaderboardPodium(user: data.topUsers[2], rank: 3, height: 70, color: const Color(0xFFCD7F32)),
+                    _LeaderboardPodium(user: data.topUsers.length > 1 ? data.topUsers[1] : null, rank: 2, height: 80, color: Colors.grey.shade400),
+                    _LeaderboardPodium(user: data.topUsers.isNotEmpty ? data.topUsers[0] : null, rank: 1, height: 100, color: const Color(0xFFF5C518)),
+                    _LeaderboardPodium(user: data.topUsers.length > 2 ? data.topUsers[2] : null, rank: 3, height: 70, color: const Color(0xFFCD7F32)),
                   ],
                 ),
               ],
@@ -660,7 +675,7 @@ class _ActionCard extends StatelessWidget {
 }
 
 class _LeaderboardPodium extends StatelessWidget {
-  final LeaderboardUser user;
+  final LeaderboardUser? user;
   final int rank;
   final double height;
   final Color color;
@@ -669,16 +684,20 @@ class _LeaderboardPodium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final name = user?.name ?? '---';
+    final scoreText = user != null ? user!.score.toString() : '---';
+    final firstLetter = user != null && user!.name.isNotEmpty ? user!.name[0] : '-';
+
     return Column(
       children: [
         CircleAvatar(
           radius: 20,
           backgroundColor: color.withValues(alpha: 0.2),
-          child: Text(user.name[0], style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          child: Text(firstLetter, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 8),
-        Text(user.name.split(' ').first, style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
-        Text(user.score.toString(), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
+        Text(name.split(' ').first, style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
+        Text(scoreText, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600)),
         const SizedBox(height: 8),
         Container(
           width: 60,

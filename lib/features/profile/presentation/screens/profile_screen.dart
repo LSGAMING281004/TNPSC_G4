@@ -18,6 +18,9 @@ import '../../../../shared/widgets/app_dialogs.dart';
 import '../../../auth/providers/auth_providers.dart' hide currentUserProvider;
 import '../../../../core/language/language_provider.dart';
 import '../../../../core/language/language_mode.dart';
+import '../../../../shared/providers/firestore_providers.dart';
+import '../../../../shared/providers/app_providers.dart';
+import '../../../../core/services/push_notification_service.dart';
 
 class Achievement {
   final String id;
@@ -153,13 +156,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           }
 
           final readiness = _calculateExamReadiness(user);
+          final bookmarksCount = ref.watch(userBookmarksStreamProvider).valueOrNull?.length ?? 0;
 
           return SingleChildScrollView(
             child: Column(
               children: [
                 _buildHeader(user, readiness, isDark),
                 const SizedBox(height: 16),
-                _buildStatsGrid(user, isDark),
+                _buildStatsGrid(user, bookmarksCount, isDark),
                 const SizedBox(height: 24),
                 _buildSectionTitle('Subject Mastery', isDark),
                 _buildSubjectMasteryBars(user, isDark),
@@ -287,7 +291,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsGrid(UserModel user, bool isDark) {
+  Widget _buildStatsGrid(UserModel user, int bookmarksCount, bool isDark) {
     // Calculate approximate values
     final testsTaken = (user.questionsAttempted / 100).floor(); // Dummy
     final daysActive = user.studyStreak; // Dummy
@@ -306,7 +310,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _buildStatCard('Questions', '${user.questionsAttempted}', Icons.quiz, Colors.purple, isDark),
           _buildStatCard('Avg Score', '${user.accuracy.toStringAsFixed(0)}%', Icons.analytics, Colors.orange, isDark),
           _buildStatCard('Streak', '${user.studyStreak}🔥', Icons.local_fire_department, Colors.red, isDark),
-          _buildStatCard('Bookmarks', '42', Icons.bookmark, Colors.teal, isDark), // Dummy
+          _buildStatCard('Bookmarks', '$bookmarksCount', Icons.bookmark, Colors.teal, isDark),
           _buildStatCard('Days Active', '$daysActive', Icons.calendar_today, Colors.green, isDark),
         ],
       ),
@@ -329,7 +333,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildSubjectMasteryBars(UserModel user, bool isDark) {
-    // Dummy calculations from accuracy or random if not present
     final subjects = ['General Tamil', 'General Studies', 'Aptitude'];
     
     return Container(
@@ -338,10 +341,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: BoxDecoration(color: isDark ? const Color(0xFF152A4A) : Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))]),
       child: Column(
         children: subjects.map((subj) {
-          // Fallback to random value to make the UI look good if user.subjectScores is missing
-          double percent = 0.5 + ((subj.length % 5) / 10.0);
-          if (user.subjectScores.containsKey(subj)) {
-             percent = (user.subjectScores[subj]! / 100).clamp(0.0, 1.0);
+          double percent = 0.0;
+          final score = user.subjectScores[subj] ??
+              user.subjectScores[subj.toLowerCase()] ??
+              (subj == 'Aptitude'
+                  ? (user.subjectScores['Aptitude & Mental Ability'] ??
+                      user.subjectScores['aptitude_mental_ability'])
+                  : null);
+          if (score != null) {
+            percent = (score / 100).clamp(0.0, 1.0);
           }
           
           return Padding(
@@ -451,8 +459,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SwitchListTile(
             title: const Text('Notifications'),
             secondary: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary),
-            value: true,
-            onChanged: (val) {},
+            value: ref.watch(notifDailyReminderProvider) || ref.watch(notifTestAlertsProvider) || ref.watch(notifCurrentAffairsProvider),
+            onChanged: (val) {
+              ref.read(notifDailyReminderProvider.notifier).state = val;
+              ref.read(notifTestAlertsProvider.notifier).state = val;
+              ref.read(notifCurrentAffairsProvider.notifier).state = val;
+
+              final box = Hive.box('settings_box');
+              box.put('notif_daily_reminder', val);
+              box.put('notif_test_alerts', val);
+              box.put('notif_current_affairs', val);
+
+              if (val) {
+                PushNotificationService.subscribeToTopic('daily_reminder');
+                PushNotificationService.subscribeToTopic('test_alerts');
+                PushNotificationService.subscribeToTopic('current_affairs');
+              } else {
+                PushNotificationService.unsubscribeFromTopic('daily_reminder');
+                PushNotificationService.unsubscribeFromTopic('test_alerts');
+                PushNotificationService.unsubscribeFromTopic('current_affairs');
+              }
+            },
             activeThumbColor: AppColors.accentSaffron,
           ),
           const Divider(height: 1),

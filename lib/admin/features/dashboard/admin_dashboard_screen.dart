@@ -193,13 +193,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GridView.extent(
-          maxCrossAxisExtent: 250,
+        final double spacing = 16.0;
+        final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 4);
+        final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
+        final double cardHeight = 150.0;
+        final ratio = cardWidth / cardHeight;
+
+        return GridView.count(
+          crossAxisCount: crossCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          childAspectRatio: ratio,
           children: [
             AdminStatCard(
               label: 'Total Users',
@@ -257,13 +263,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GridView.extent(
-          maxCrossAxisExtent: 250,
+        final double spacing = 12.0;
+        final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 2);
+        final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
+        final double cardHeight = 150.0;
+        final ratio = cardWidth / cardHeight;
+
+        return GridView.count(
+          crossAxisCount: crossCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.5,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          childAspectRatio: ratio,
           children: [
             AdminStatCard(
               label: 'Study Materials',

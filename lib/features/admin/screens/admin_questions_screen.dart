@@ -46,7 +46,7 @@ class _AdminQuestionsScreenState extends State<AdminQuestionsScreen> {
 
     try {
       final csvString = utf8.decode(result.files.single.bytes!);
-      final rows = const CsvDecoder().convert(csvString);
+      final rows = Csv().decode(csvString);
       
       final allRows = rows.skip(1).toList();
       int importedCount = 0;

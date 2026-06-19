@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../shared/models/current_affairs_model.dart';
 import '../../providers/current_affairs_providers.dart';
 
@@ -26,6 +27,13 @@ class _CurrentAffairsScreenState extends ConsumerState<CurrentAffairsScreen> wit
       if (!_tabController.indexIsChanging) {
         ref.read(caFilterProvider.notifier).setPeriod(_periods[_tabController.index]);
       }
+    });
+
+    // Mark current affairs as viewed to clear dashboard badge
+    Future.microtask(() {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      Hive.box('settings_box').put('last_viewed_ca', now);
+      ref.read(lastViewedCATimeProvider.notifier).state = now;
     });
   }
 

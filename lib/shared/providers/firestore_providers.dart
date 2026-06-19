@@ -145,6 +145,16 @@ final notificationsStreamProvider =
           }).toList());
 });
 
+/// Streams the count of unread notifications.
+final unreadNotificationsCountProvider = Provider<int>((ref) {
+  final notifsAsync = ref.watch(notificationsStreamProvider);
+  return notifsAsync.maybeWhen(
+    data: (list) => list.where((n) => !(n['read'] as bool? ?? false)).length,
+    orElse: () => 0,
+  );
+});
+
+
 // ─────────────────────────────────────────────
 //  LEADERBOARD
 // ─────────────────────────────────────────────

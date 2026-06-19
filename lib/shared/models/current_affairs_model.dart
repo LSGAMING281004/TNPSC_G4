@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CurrentAffairsModel {
   final String id;
   final String titleTamil;
@@ -35,7 +37,9 @@ class CurrentAffairsModel {
       category: map['category'] ?? 'National',
       importance: map['importance'] ?? 'medium',
       publishedAt: map['publishedAt'] != null 
-          ? DateTime.parse(map['publishedAt']) 
+          ? (map['publishedAt'] is Timestamp 
+              ? (map['publishedAt'] as Timestamp).toDate() 
+              : DateTime.tryParse(map['publishedAt'].toString()) ?? DateTime.now())
           : DateTime.now(),
       tags: List<String>.from(map['tags'] ?? []),
       hasQuiz: map['hasQuiz'] ?? false,

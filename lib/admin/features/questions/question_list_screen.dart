@@ -59,16 +59,18 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
           onSubmitted: (v) => ref.read(questionSearchProvider.notifier).state = v,
         )),
-        SizedBox(width: 160, height: 42, child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(hintText: 'Subject', contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        SizedBox(width: 160, height: 48, child: DropdownButtonFormField<String>(
+          isDense: true,
+          decoration: InputDecoration(hintText: 'Subject', contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
           initialValue: ref.watch(questionFilterSubjectProvider),
           items: [const DropdownMenuItem(value: null, child: Text('All')),
             ...AdminConstants.defaultSubjects.map((s) => DropdownMenuItem(value: s, child: Text(s)))],
           onChanged: (v) => ref.read(questionFilterSubjectProvider.notifier).state = v,
         )),
-        SizedBox(width: 130, height: 42, child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(hintText: 'Difficulty', contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        SizedBox(width: 130, height: 48, child: DropdownButtonFormField<String>(
+          isDense: true,
+          decoration: InputDecoration(hintText: 'Difficulty', contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
           initialValue: ref.watch(questionFilterDifficultyProvider),
           items: [const DropdownMenuItem(value: null, child: Text('All')),

@@ -37,6 +37,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _questionsPerSession = 50;
   String _difficulty = 'Mixed';
   bool _timerSound = true;
+  bool _dailyReminder = true;
+  bool _testAlerts = true;
+  bool _currentAffairs = true;
 
   @override
   void initState() {
@@ -51,6 +54,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _questionsPerSession = _settingsBox.get('questionsPerSession', defaultValue: 50);
     _difficulty = _settingsBox.get('difficulty', defaultValue: 'Mixed');
     _timerSound = _settingsBox.get('timerSound', defaultValue: true);
+    _dailyReminder = _settingsBox.get('notif_daily_reminder', defaultValue: true);
+    _testAlerts = _settingsBox.get('notif_test_alerts', defaultValue: true);
+    _currentAffairs = _settingsBox.get('notif_current_affairs', defaultValue: true);
   }
 
   Future<void> _initPackageInfo() async {
@@ -199,9 +205,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SwitchListTile(
               title: const Text('Daily Study Reminder'),
               secondary: Icon(Icons.alarm, color: iconColor),
-              value: dailyReminder,
+              value: _dailyReminder,
               activeThumbColor: AppColors.accentSaffron,
               onChanged: (val) {
+                setState(() {
+                  _dailyReminder = val;
+                });
                 ref.read(notifDailyReminderProvider.notifier).state = val;
                 ref.read(settingsBoxProvider).put('notif_daily_reminder', val);
                 if (val) {
@@ -213,25 +222,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const Divider(height: 0),
             ListTile(
-              enabled: dailyReminder,
-              leading: Icon(Icons.access_time, color: dailyReminder ? iconColor : Theme.of(context).disabledColor),
-              title: Text('Reminder Time', style: TextStyle(color: dailyReminder ? null : Theme.of(context).disabledColor)),
+              enabled: _dailyReminder,
+              leading: Icon(Icons.access_time, color: _dailyReminder ? iconColor : Theme.of(context).disabledColor),
+              title: Text('Reminder Time', style: TextStyle(color: _dailyReminder ? null : Theme.of(context).disabledColor)),
               trailing: Text(
                 MaterialLocalizations.of(context).formatTimeOfDay(reminderTime),
                 style: TextStyle(
-                  color: dailyReminder ? AppColors.accentSaffron : Theme.of(context).disabledColor,
+                  color: _dailyReminder ? AppColors.accentSaffron : Theme.of(context).disabledColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onTap: dailyReminder ? _pickTime : null,
+              onTap: _dailyReminder ? _pickTime : null,
             ),
             const Divider(height: 0),
             SwitchListTile(
               title: const Text('Exam Countdown Alerts'),
               secondary: Icon(Icons.event, color: iconColor),
-              value: testAlerts,
+              value: _testAlerts,
               activeThumbColor: AppColors.accentSaffron,
               onChanged: (val) {
+                setState(() {
+                  _testAlerts = val;
+                });
                 ref.read(notifTestAlertsProvider.notifier).state = val;
                 ref.read(settingsBoxProvider).put('notif_test_alerts', val);
                 if (val) {
@@ -245,9 +257,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SwitchListTile(
               title: const Text('Current Affairs Digest'),
               secondary: Icon(Icons.newspaper, color: iconColor),
-              value: currentAffairs,
+              value: _currentAffairs,
               activeThumbColor: AppColors.accentSaffron,
               onChanged: (val) {
+                setState(() {
+                  _currentAffairs = val;
+                });
                 ref.read(notifCurrentAffairsProvider.notifier).state = val;
                 ref.read(settingsBoxProvider).put('notif_current_affairs', val);
                 if (val) {

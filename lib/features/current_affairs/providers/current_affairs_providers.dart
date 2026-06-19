@@ -78,21 +78,21 @@ final currentAffairsListProvider = FutureProvider<List<CurrentAffairsModel>>((re
     switch (filter.period) {
       case 'today':
         startDate = DateTime(now.year, now.month, now.day);
-        query = query.where('publishedAt', isGreaterThanOrEqualTo: startDate.toIso8601String());
+        query = query.where('publishedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
         break;
       case 'week':
         startDate = now.subtract(Duration(days: now.weekday - 1)); // start of week
         startDate = DateTime(startDate.year, startDate.month, startDate.day);
-        query = query.where('publishedAt', isGreaterThanOrEqualTo: startDate.toIso8601String());
+        query = query.where('publishedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
         break;
       case 'month':
         startDate = DateTime(now.year, now.month, 1);
-        query = query.where('publishedAt', isGreaterThanOrEqualTo: startDate.toIso8601String());
+        query = query.where('publishedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
         break;
       case 'archive':
         // get older ones
         startDate = DateTime(now.year, now.month, 1);
-        query = query.where('publishedAt', isLessThan: startDate.toIso8601String());
+        query = query.where('publishedAt', isLessThan: Timestamp.fromDate(startDate));
         break;
     }
     
@@ -126,3 +126,37 @@ final currentAffairDetailProvider = FutureProvider.family<CurrentAffairsModel, S
   final cached = await _getCachedArticles();
   return cached.firstWhere((element) => element.id == id, orElse: () => throw Exception('Article not found'));
 });
+
+// Real-time unread/new current affairs tracking
+final lastViewedCATimeProvider = StateProvider<int>((ref) {
+  final box = Hive.box('settings_box');
+  return box.get('last_viewed_ca', defaultValue: 0) as int;
+});
+
+final newCurrentAffairsCountProvider = StreamProvider<int>((ref) {
+  final lastViewedMs = ref.watch(lastViewedCATimeProvider);
+  final lastViewed = DateTime.fromMillisecondsSinceEpoch(lastViewedMs);
+  
+  return FirebaseFirestore.instance
+      .collection('current_affairs')
+      .snapshots()
+      .map((snap) {
+        int count = 0;
+        for (var doc in snap.docs) {
+          final data = doc.data();
+          DateTime pubDate = DateTime.fromMillisecondsSinceEpoch(0);
+          if (data['publishedAt'] != null) {
+            if (data['publishedAt'] is Timestamp) {
+              pubDate = (data['publishedAt'] as Timestamp).toDate();
+            } else {
+              pubDate = DateTime.tryParse(data['publishedAt'].toString()) ?? pubDate;
+            }
+          }
+          if (pubDate.isAfter(lastViewed)) {
+            count++;
+          }
+        }
+        return count;
+      });
+});
+
