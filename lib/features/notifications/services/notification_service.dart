@@ -43,15 +43,22 @@ class NotificationService {
     _fcm.getToken().then((token) => _saveToken(token));
     _fcm.onTokenRefresh.listen(_saveToken);
 
-    // 5. Handle Foreground FCM Messages
+    // 5. Subscribe to default FCM topics so the device receives push notifications
+    try {
+      await _fcm.subscribeToTopic('all_users');
+    } catch (e) {
+      // Topic subscription may fail on web or desktop, ignore silently
+    }
+
+    // 6. Handle Foreground FCM Messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _showLocalNotification(message);
     });
 
-    // 6. Handle Background/Terminated FCM Taps
+    // 7. Handle Background/Terminated FCM Taps
     FirebaseMessaging.onMessageOpenedApp.listen(_handleFCMTap);
 
-    // 7. Schedule Daily Reminder
+    // 8. Schedule Daily Reminder
     await _scheduleDailyReminder();
   }
 

@@ -304,25 +304,21 @@ const { beforeUserCreated } = require("firebase-functions/v2/identity");
 exports.onUserCreated = beforeUserCreated(async (event) => {
   const user = event.data;
   
-  // Note: Firestore writes in blocking triggers might delay sign-up, 
-  // but we can also use standard background triggers. 
-  // Using background approach instead to not block auth:
-});
-
-const { onUserCreated: backgroundUserCreated } = require("firebase-functions/v1/auth");
-exports.onUserCreatedBackground = backgroundUserCreated().onUserCreated(async (user) => {
-  await db.collection("users").doc(user.uid).set({
-    email: user.email,
-    name: user.displayName || "TNPSC Aspirant",
-    photoUrl: user.photoURL || null,
-    district: "Chennai", // Default
-    streak: 0,
-    testsAttempted: 0,
-    totalScore: 0,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-  
-  // Welcome Notification can be scheduled or sent directly if token exists (usually not present yet)
+  // Create user profile document in Firestore
+  try {
+    await db.collection("users").doc(user.uid).set({
+      email: user.email,
+      name: user.displayName || "TNPSC Aspirant",
+      photoUrl: user.photoURL || null,
+      district: "Chennai", // Default
+      streak: 0,
+      testsAttempted: 0,
+      totalScore: 0,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch (e) {
+    console.error("Error creating user profile:", e);
+  }
 });
 
 // ─────────────────────────────────────────────

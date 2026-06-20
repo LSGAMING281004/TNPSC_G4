@@ -1,19 +1,20 @@
 flutter_native_splash:
+  # Solid dark navy background — no background_image needed since the logo
+  # already contains the brand mark with proper padding
   color: "#0B1E36"
   color_dark: "#0B1E36"
 
+  # Main splash logo (centered on screen)
   image: assets/icons/splash_logo.png
   image_dark: assets/icons/splash_logo.png
 
-  background_image: assets/images/splash_bg.png
-  background_image_dark: assets/images/splash_bg.png
-
   fullscreen: false
 
+  # Android 12+ uses a centered circular icon crop
   android_12:
-    image: assets/icons/splash_logo.png
+    image: assets/icons/icon_1024.png
     icon_background_color: "#0B1E36"
-    image_dark: assets/icons/splash_logo.png
+    image_dark: assets/icons/icon_1024.png
     icon_background_color_dark: "#0B1E36"
     color: "#0B1E36"
     color_dark: "#0B1E36"

@@ -38,7 +38,11 @@ class _NotificationComposeScreenState extends ConsumerState<NotificationComposeS
     try {
       await _fs.collection(AdminConstants.notificationsCollection).add({
         'title': _titleCtrl.text, 'body': _bodyCtrl.text,
-        'topic': _topic, 'sentAt': FieldValue.serverTimestamp(),
+        'topic': _topic,
+        'sentAt': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'read': false,
+        'type': 'general',
         'status': 'Sent', 'deliveredCount': 0,
       });
       await AdminActivityLogService.log(action: 'Sent notification', targetCollection: AdminConstants.notificationsCollection);
