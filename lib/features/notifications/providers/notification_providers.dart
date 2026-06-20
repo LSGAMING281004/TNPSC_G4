@@ -1,22 +1,36 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/firestore_providers.dart';
 import '../models/notification_model.dart';
 
-final notificationsProvider = StreamProvider.autoDispose<List<NotificationModel>>((ref) {
-  final uid = ref.watch(currentUserProvider)?.uid;
-  if (uid == null) return Stream.value([]);
-
-  return FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('notifications')
-      .orderBy('createdAt', descending: true)
-      .snapshots()
-      .map((snap) => snap.docs.map((doc) => NotificationModel.fromFirestore(doc)).toList());
+/// Converts the raw map-based `notificationsStreamProvider` into typed
+/// `NotificationModel` objects for screens that prefer the typed API.
+final notificationsProvider = Provider.autoDispose<List<NotificationModel>>((ref) {
+  final raw = ref.watch(notificationsStreamProvider).valueOrNull ?? [];
+  return raw.map((map) {
+    // Build a lightweight DocumentSnapshot-like conversion
+    return NotificationModel(
+      id: map['id'] as String? ?? '',
+      title: map['title'] as String? ?? '',
+      body: map['body'] as String? ?? '',
+      type: map['type'] as String? ?? 'general',
+      isRead: map['read'] as bool? ?? map['isRead'] as bool? ?? false,
+      createdAt: _extractDateTime(map['createdAt']),
+      payload: map['payload'] as Map<String, dynamic>? ?? {},
+    );
+  }).toList();
 });
 
-final unreadNotificationsCountProvider = Provider.autoDispose<int>((ref) {
-  final notifications = ref.watch(notificationsProvider).valueOrNull ?? [];
-  return notifications.where((n) => !n.isRead).length;
-});
+DateTime _extractDateTime(dynamic value) {
+  if (value == null) return DateTime.now();
+  if (value is DateTime) return value;
+  // Firestore Timestamp
+  try {
+    return (value as dynamic).toDate() as DateTime;
+  } catch (_) {
+    return DateTime.now();
+  }
+}
+
+// Re-export unreadNotificationsCountProvider from the single source of truth
+// so existing imports still work.  The canonical definition lives in
+// shared/providers/firestore_providers.dart.

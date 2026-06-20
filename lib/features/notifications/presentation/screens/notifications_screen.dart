@@ -154,13 +154,17 @@ class NotificationsScreen extends ConsumerWidget {
 
   void _markAllRead(WidgetRef ref) async {
     try {
-      final snap = await FirebaseFirestore.instance
-          .collection('notifications')
-          .where('read', isEqualTo: false)
-          .get();
+      // Use the already-loaded notification list to only mark current user's visible notifications
+      final notifications = ref.read(notificationsStreamProvider).valueOrNull ?? [];
+      if (notifications.isEmpty) return;
       final batch = FirebaseFirestore.instance.batch();
-      for (final doc in snap.docs) {
-        batch.update(doc.reference, {'read': true});
+      for (final n in notifications) {
+        if (n['read'] == false) {
+          batch.update(
+            FirebaseFirestore.instance.collection('notifications').doc(n['id'] as String),
+            {'read': true},
+          );
+        }
       }
       await batch.commit();
     } catch (_) {}

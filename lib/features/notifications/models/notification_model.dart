@@ -26,7 +26,7 @@ class NotificationModel {
       title: data['title'] ?? '',
       body: data['body'] ?? '',
       type: data['type'] ?? 'general',
-      isRead: data['isRead'] ?? false,
+      isRead: data['read'] ?? data['isRead'] ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       payload: data['payload'] ?? {},
     );
@@ -37,7 +37,7 @@ class NotificationModel {
       'title': title,
       'body': body,
       'type': type,
-      'isRead': isRead,
+      'read': isRead,
       'createdAt': Timestamp.fromDate(createdAt),
       'payload': payload,
     };
