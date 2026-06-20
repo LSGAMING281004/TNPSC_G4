@@ -15,6 +15,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/app_dialogs.dart';
+import '../../../../shared/widgets/achievement_share_card.dart';
 import '../../../auth/providers/auth_providers.dart' hide currentUserProvider;
 import '../../../../core/language/language_provider.dart';
 import '../../../../core/language/language_mode.dart';
@@ -383,7 +384,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildAchievementsGrid(UserModel user, bool isDark) {
     return SizedBox(
-      height: 140,
+      height: 150,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -392,37 +393,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           final a = _achievements[index];
           final unlocked = _isAchievementUnlocked(a, user);
           
-          return Container(
-            width: 120,
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: unlocked ? (isDark ? const Color(0xFF152A4A) : Colors.white) : (isDark ? const Color(0xFF1A3358) : Colors.grey.shade100),
-              borderRadius: BorderRadius.circular(16),
-              border: unlocked ? Border.all(color: AppColors.accentSaffron.withValues(alpha: 0.3), width: 2) : null,
-              boxShadow: unlocked ? [BoxShadow(color: AppColors.accentSaffron.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(a.icon, style: TextStyle(fontSize: 32, color: unlocked ? null : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2))),
-                const SizedBox(height: 8),
-                Text(
-                  a.title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: unlocked ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
-                ),
-                const SizedBox(height: 4),
-                if (unlocked)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                    child: const Text('UNLOCKED', style: TextStyle(fontSize: 8, color: AppColors.success, fontWeight: FontWeight.bold)),
-                  )
-                else
-                  Text('${a.xp} XP', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4))),
-              ],
+          return GestureDetector(
+            onTap: () {
+              if (unlocked) {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    backgroundColor: Colors.transparent,
+                    insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AchievementShareCard(
+                      badgeName: a.title,
+                      badgeId: a.id,
+                      subject: a.desc,
+                      scorePercent: user.accuracy,
+                      streakDays: user.studyStreak,
+                    ),
+                  ),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    title: Row(
+                      children: [
+                        const Icon(Icons.lock, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        Text(a.title),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Opacity(
+                            opacity: 0.3,
+                            child: ColorFiltered(
+                              colorFilter: const ColorFilter.matrix(<double>[
+                                0.2126, 0.7152, 0.0722, 0, 0,
+                                0.2126, 0.7152, 0.0722, 0, 0,
+                                0.2126, 0.7152, 0.0722, 0, 0,
+                                0,      0,      0,      1, 0,
+                              ]),
+                              child: Image.asset(
+                                'assets/images/achievements/${a.id}.png',
+                                width: 90,
+                                height: 90,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'How to unlock:',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(a.desc),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Reward: ${a.xp} XP',
+                          style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.success),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            child: Container(
+              width: 120,
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: unlocked ? (isDark ? const Color(0xFF152A4A) : Colors.white) : (isDark ? const Color(0xFF1A3358) : Colors.grey.shade100),
+                borderRadius: BorderRadius.circular(16),
+                border: unlocked ? Border.all(color: AppColors.accentSaffron.withValues(alpha: 0.3), width: 2) : null,
+                boxShadow: unlocked ? [BoxShadow(color: AppColors.accentSaffron.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  unlocked
+                      ? Image.asset(
+                          'assets/images/achievements/${a.id}.png',
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.contain,
+                        )
+                      : ColorFiltered(
+                          colorFilter: const ColorFilter.matrix(<double>[
+                            0.2126, 0.7152, 0.0722, 0, 0,
+                            0.2126, 0.7152, 0.0722, 0, 0,
+                            0.2126, 0.7152, 0.0722, 0, 0,
+                            0,      0,      0,      0.3, 0,
+                          ]),
+                          child: Image.asset(
+                            'assets/images/achievements/${a.id}.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                  const SizedBox(height: 8),
+                  Text(
+                    a.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: unlocked ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (unlocked)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                      child: const Text('UNLOCKED', style: TextStyle(fontSize: 8, color: AppColors.success, fontWeight: FontWeight.bold)),
+                    )
+                  else
+                    Text('${a.xp} XP', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4))),
+                ],
+              ),
             ),
           );
         },

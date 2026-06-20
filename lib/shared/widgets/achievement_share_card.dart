@@ -10,6 +10,7 @@ import 'app_logo.dart';
 
 class AchievementShareCard extends StatefulWidget {
   final String badgeName;
+  final String badgeId;
   final String subject;
   final double scorePercent;
   final int streakDays;
@@ -17,6 +18,7 @@ class AchievementShareCard extends StatefulWidget {
   const AchievementShareCard({
     super.key,
     required this.badgeName,
+    required this.badgeId,
     required this.subject,
     required this.scorePercent,
     required this.streakDays,
@@ -106,30 +108,26 @@ class _AchievementShareCardState extends State<AchievementShareCard> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Center badge visual placeholder
+                  // Center badge image asset
                   Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppColors.accentSaffron.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.accentSaffron.withValues(alpha: 0.4),
-                        width: 2,
-                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accentSaffron.withValues(alpha: 0.2),
-                          blurRadius: 16,
-                          spreadRadius: 2,
+                          color: AppColors.accentSaffron.withValues(alpha: 0.25),
+                          blurRadius: 20,
+                          spreadRadius: 4,
                         ),
                       ],
                     ),
                     child: Center(
-                      child: Icon(
-                        Icons.emoji_events,
-                        size: 52,
-                        color: AppColors.accentSaffron,
+                      child: Image.asset(
+                        'assets/images/achievements/${widget.badgeId}.png',
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

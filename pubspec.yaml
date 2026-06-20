@@ -105,6 +105,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/images/achievements/
     - assets/icons/
     - assets/logos/
     - assets/lottie/
