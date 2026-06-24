@@ -63,12 +63,7 @@ void main() async {
   // Initialize audio service for background playback
   final audioHandler = await initAudioService();
 
-  // Pre-load Noto Sans Tamil so Tamil mode renders immediately
-  await GoogleFonts.pendingFonts([GoogleFonts.notoSansTamil()]);
-
-  // Initialize unified Notification Service (FCM & Local)
-  await NotificationService().init();
-
+  // Remove splash screen first so the app is interactive immediately
   FlutterNativeSplash.remove();
 
   runApp(
@@ -79,6 +74,26 @@ void main() async {
       child: const ThiralApp(),
     ),
   );
+
+  // Run non-critical background initialization (font pre-loading, notification service setup)
+  // in the background without blocking the UI thread or splash screen removal.
+  _runBackgroundInit();
+}
+
+void _runBackgroundInit() async {
+  try {
+    // Pre-load Noto Sans Tamil so Tamil mode renders immediately
+    await GoogleFonts.pendingFonts([GoogleFonts.notoSansTamil()]);
+  } catch (e) {
+    debugPrint('Failed to pre-load fonts: $e');
+  }
+
+  try {
+    // Initialize unified Notification Service (FCM & Local)
+    await NotificationService().init();
+  } catch (e) {
+    debugPrint('Failed to initialize NotificationService: $e');
+  }
 }
 
 Future<void> _openHiveBoxes() async {

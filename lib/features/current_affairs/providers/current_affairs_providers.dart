@@ -67,11 +67,6 @@ final currentAffairsListProvider = FutureProvider<List<CurrentAffairsModel>>((re
   try {
     Query query = FirebaseFirestore.instance.collection('current_affairs');
     
-    // Apply Category Filter
-    if (filter.category != 'All') {
-      query = query.where('category', isEqualTo: filter.category);
-    }
-    
     // Apply Period Filter
     final now = DateTime.now();
     DateTime startDate;
@@ -96,10 +91,15 @@ final currentAffairsListProvider = FutureProvider<List<CurrentAffairsModel>>((re
         break;
     }
     
-    query = query.orderBy('publishedAt', descending: true).limit(50);
+    query = query.orderBy('publishedAt', descending: true).limit(100);
     
     final snapshot = await query.get();
-    final articles = snapshot.docs.map((doc) => CurrentAffairsModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+    var articles = snapshot.docs.map((doc) => CurrentAffairsModel.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+    
+    // Apply Category Filter in-memory to avoid needing composite index setup
+    if (filter.category != 'All') {
+      articles = articles.where((a) => a.category == filter.category).toList();
+    }
     
     if (filter.period == 'today' && filter.category == 'All') {
       _cacheArticles(articles); // Fire and forget cache update

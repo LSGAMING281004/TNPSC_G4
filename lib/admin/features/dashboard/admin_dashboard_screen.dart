@@ -197,7 +197,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 4);
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
         final double cardHeight = 150.0;
-        final ratio = cardWidth / cardHeight;
+        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
         return GridView.count(
           crossAxisCount: crossCount,
@@ -267,7 +267,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 2);
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
         final double cardHeight = 150.0;
-        final ratio = cardWidth / cardHeight;
+        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
         return GridView.count(
           crossAxisCount: crossCount,

@@ -154,7 +154,7 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
         final double spacing = 12.0;
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
         final double cardHeight = 150.0;
-        final ratio = cardWidth / cardHeight;
+        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
         return GridView.count(
           crossAxisCount: crossCount,

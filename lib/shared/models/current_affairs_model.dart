@@ -28,13 +28,19 @@ class CurrentAffairsModel {
   });
 
   factory CurrentAffairsModel.fromMap(Map<String, dynamic> map, String id) {
+    String category = map['category'] ?? 'National';
+    // Align admin category strings with client category strings
+    if (category == 'Tamil Nadu') category = 'TN_State';
+    if (category == 'India') category = 'National';
+    if (category == 'Science & Tech') category = 'Science';
+
     return CurrentAffairsModel(
       id: id,
-      titleTamil: map['titleTamil'] ?? '',
-      titleEnglish: map['titleEnglish'] ?? '',
-      contentTamil: map['contentTamil'] ?? '',
-      contentEnglish: map['contentEnglish'] ?? '',
-      category: map['category'] ?? 'National',
+      titleTamil: map['titleTamil'] ?? map['titleTa'] ?? '',
+      titleEnglish: map['titleEnglish'] ?? map['titleEn'] ?? '',
+      contentTamil: map['contentTamil'] ?? map['contentTa'] ?? map['summaryTa'] ?? '',
+      contentEnglish: map['contentEnglish'] ?? map['contentEn'] ?? map['summaryEn'] ?? '',
+      category: category,
       importance: map['importance'] ?? 'medium',
       publishedAt: map['publishedAt'] != null 
           ? (map['publishedAt'] is Timestamp 
@@ -43,7 +49,7 @@ class CurrentAffairsModel {
           : DateTime.now(),
       tags: List<String>.from(map['tags'] ?? []),
       hasQuiz: map['hasQuiz'] ?? false,
-      imageUrl: map['imageUrl'],
+      imageUrl: map['imageUrl'] ?? map['coverImageUrl'],
     );
   }
 

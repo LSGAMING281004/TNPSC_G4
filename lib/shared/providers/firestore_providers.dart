@@ -96,17 +96,40 @@ final questionsStreamProvider = StreamProvider.family<
 final studyMaterialsStreamProvider =
     StreamProvider.family<List<Map<String, dynamic>>, String?>((ref, subject) {
   Query query = FirebaseFirestore.instance
-      .collection(AppConstants.studyMaterialsCollection)
-      .orderBy('createdAt', descending: true);
+      .collection(AppConstants.studyMaterialsCollection);
 
   if (subject != null && subject.isNotEmpty) {
     query = query.where('subject', isEqualTo: subject);
   }
 
-  return query.snapshots().map((snap) => snap.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return {'id': doc.id, ...data};
-      }).toList());
+  return query.snapshots().map((snap) {
+    final list = snap.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'id': doc.id,
+        'title': data['title'] ?? data['titleEn'] ?? data['titleTa'] ?? data['chapter'] ?? 'Study Material',
+        'fileUrl': data['fileUrl'] ?? data['downloadUrl'] ?? '',
+        'sizeMB': data['sizeMB'] ?? (data['fileSize'] != null ? (data['fileSize'] as num) / (1024 * 1024) : 0.0),
+        'pages': data['pages'] ?? 0,
+        'type': data['type'] ?? 'pdf',
+        'createdAt': data['createdAt'] ?? data['uploadedAt'],
+        ...data,
+      };
+    }).toList();
+
+    // Sort in memory by createdAt descending
+    list.sort((a, b) {
+      final timeA = a['createdAt'] is Timestamp 
+          ? (a['createdAt'] as Timestamp).toDate()
+          : (a['createdAt'] is DateTime ? a['createdAt'] as DateTime : DateTime.fromMillisecondsSinceEpoch(0));
+      final timeB = b['createdAt'] is Timestamp 
+          ? (b['createdAt'] as Timestamp).toDate()
+          : (b['createdAt'] is DateTime ? b['createdAt'] as DateTime : DateTime.fromMillisecondsSinceEpoch(0));
+      return timeB.compareTo(timeA);
+    });
+
+    return list;
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -457,7 +480,20 @@ final singleStudyMaterialProvider = StreamProvider.family<Map<String, dynamic>?,
       .collection(AppConstants.studyMaterialsCollection)
       .doc(materialId)
       .snapshots()
-      .map((doc) => doc.exists ? doc.data() : null);
+      .map((doc) {
+        if (!doc.exists || doc.data() == null) return null;
+        final data = doc.data()!;
+        return {
+          'id': doc.id,
+          'title': data['title'] ?? data['titleEn'] ?? data['titleTa'] ?? data['chapter'] ?? 'Study Material',
+          'fileUrl': data['fileUrl'] ?? data['downloadUrl'] ?? '',
+          'sizeMB': data['sizeMB'] ?? (data['fileSize'] != null ? (data['fileSize'] as num) / (1024 * 1024) : 0.0),
+          'pages': data['pages'] ?? 0,
+          'type': data['type'] ?? 'pdf',
+          'createdAt': data['createdAt'] ?? data['uploadedAt'],
+          ...data,
+        };
+      });
 });
 
 /// Streams all study material bookmarks for the logged-in user as a Set of material IDs for O(1) checks.
