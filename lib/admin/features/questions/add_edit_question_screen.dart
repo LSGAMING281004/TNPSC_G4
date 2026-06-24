@@ -149,11 +149,23 @@ class _AddEditQuestionScreenState extends ConsumerState<AddEditQuestionScreen> {
               Radio<String>(value: entry.$1, groupValue: _correct, onChanged: (v) => setState(() => _correct = v!), activeColor: AdminTheme.saffron),
               Text('Option ${entry.$1}', style: const TextStyle(fontWeight: FontWeight.w600)),
             ]),
-            Row(children: [
-              Expanded(child: TextFormField(controller: entry.$2, decoration: const InputDecoration(hintText: 'Tamil'), validator: (v) => v!.isEmpty ? 'Required' : null)),
-              const SizedBox(width: 8),
-              Expanded(child: TextFormField(controller: entry.$3, decoration: const InputDecoration(hintText: 'English'), validator: (v) => v!.isEmpty ? 'Required' : null)),
-            ]),
+            LayoutBuilder(builder: (context, constraints) {
+              final isMobileForm = constraints.maxWidth < 550;
+              if (isMobileForm) {
+                return Column(
+                  children: [
+                    TextFormField(controller: entry.$2, decoration: const InputDecoration(hintText: 'Tamil'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                    const SizedBox(height: 8),
+                    TextFormField(controller: entry.$3, decoration: const InputDecoration(hintText: 'English'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  ],
+                );
+              }
+              return Row(children: [
+                Expanded(child: TextFormField(controller: entry.$2, decoration: const InputDecoration(hintText: 'Tamil'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                const SizedBox(width: 8),
+                Expanded(child: TextFormField(controller: entry.$3, decoration: const InputDecoration(hintText: 'English'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+              ]);
+            }),
             const SizedBox(height: 8),
           ],
           const SizedBox(height: 20),

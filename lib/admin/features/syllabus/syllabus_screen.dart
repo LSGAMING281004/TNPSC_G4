@@ -27,6 +27,40 @@ class _SyllabusScreenState extends ConsumerState<SyllabusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 900;
+    if (isMobile) {
+      return DefaultTabController(
+        length: 3,
+        child: SizedBox(
+          height: 600,
+          child: Column(
+            children: [
+              const TabBar(
+                tabs: [
+                  Tab(text: 'Subjects'),
+                  Tab(text: 'Chapters'),
+                  Tab(text: 'Topics'),
+                ],
+                labelColor: AdminTheme.saffron,
+                unselectedLabelColor: AdminTheme.textSecondary,
+                indicatorColor: AdminTheme.saffron,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _col('Subjects', _subjectsCol()),
+                    _col('Chapters', _chaptersCol()),
+                    _col('Topics', _topicsCol()),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SizedBox(height: 550, child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // Column 1: Subjects
       _col('Subjects', _subjectsCol()),

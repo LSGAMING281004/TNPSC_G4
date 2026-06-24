@@ -194,62 +194,73 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double spacing = 16.0;
-        final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 4);
+        int crossCount = 4;
+        if (constraints.maxWidth < 600) {
+          crossCount = 1;
+        } else if (constraints.maxWidth < 900) {
+          crossCount = 2;
+        }
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
-        final double cardHeight = 150.0;
-        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
-        return GridView.count(
-          crossAxisCount: crossCount,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: spacing,
-          crossAxisSpacing: spacing,
-          childAspectRatio: ratio,
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
           children: [
-            AdminStatCard(
-              label: 'Total Users',
-              value: users.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Total Users',
+                value: users.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.people_rounded,
+                color: AdminTheme.info,
+                isLoading: users.isLoading,
               ),
-              icon: Icons.people_rounded,
-              color: AdminTheme.info,
-              isLoading: users.isLoading,
             ),
-            AdminStatCard(
-              label: 'Questions Added',
-              value: questions.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Questions Added',
+                value: questions.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.quiz_rounded,
+                color: AdminTheme.success,
+                isLoading: questions.isLoading,
               ),
-              icon: Icons.quiz_rounded,
-              color: AdminTheme.success,
-              isLoading: questions.isLoading,
             ),
-            AdminStatCard(
-              label: 'Mock Tests',
-              value: tests.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Mock Tests',
+                value: tests.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.assignment_rounded,
+                color: AdminTheme.saffron,
+                isLoading: tests.isLoading,
               ),
-              icon: Icons.assignment_rounded,
-              color: AdminTheme.saffron,
-              isLoading: tests.isLoading,
             ),
-            AdminStatCard(
-              label: "Today's Active",
-              value: activeToday.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: "Today's Active",
+                value: activeToday.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.trending_up_rounded,
+                color: AdminTheme.warning,
+                isLoading: activeToday.isLoading,
               ),
-              icon: Icons.trending_up_rounded,
-              color: AdminTheme.warning,
-              isLoading: activeToday.isLoading,
             ),
           ],
         );
@@ -264,40 +275,43 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double spacing = 12.0;
-        final int crossCount = (constraints.maxWidth / (220 + spacing)).floor().clamp(1, 2);
+        int crossCount = 2;
+        if (constraints.maxWidth < 600) {
+          crossCount = 1;
+        }
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
-        final double cardHeight = 150.0;
-        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
-        return GridView.count(
-          crossAxisCount: crossCount,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: spacing,
-          crossAxisSpacing: spacing,
-          childAspectRatio: ratio,
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
           children: [
-            AdminStatCard(
-              label: 'Study Materials',
-              value: materials.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Study Materials',
+                value: materials.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.menu_book_rounded,
+                color: const Color(0xFF2980B9),
+                isLoading: materials.isLoading,
               ),
-              icon: Icons.menu_book_rounded,
-              color: const Color(0xFF2980B9),
-              isLoading: materials.isLoading,
             ),
-            AdminStatCard(
-              label: 'Audio Books',
-              value: audioBooks.when(
-                data: (v) => _formatNumber(v),
-                loading: () => '—',
-                error: (_, __) => 'Err',
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Audio Books',
+                value: audioBooks.when(
+                  data: (v) => _formatNumber(v),
+                  loading: () => '—',
+                  error: (_, __) => 'Err',
+                ),
+                icon: Icons.headphones_rounded,
+                color: const Color(0xFF9B59B6),
+                isLoading: audioBooks.isLoading,
               ),
-              icon: Icons.headphones_rounded,
-              color: const Color(0xFF9B59B6),
-              isLoading: audioBooks.isLoading,
             ),
           ],
         );
@@ -710,15 +724,18 @@ class _QuickActionTileState extends State<_QuickActionTile> {
                 child: Icon(widget.icon, size: 18, color: widget.color),
               ),
               const SizedBox(width: 12),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: _hovering ? widget.color : AdminTheme.textPrimary,
+              Expanded(
+                child: Text(
+                  widget.label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: _hovering ? widget.color : AdminTheme.textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Icon(
                 Icons.arrow_forward_ios,
                 size: 14,

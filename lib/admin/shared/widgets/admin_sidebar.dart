@@ -62,12 +62,16 @@ class AdminSidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCollapsed = ref.watch(sidebarCollapsedProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 800;
+    final isCollapsed = isMobile ? false : ref.watch(sidebarCollapsedProvider);
     final adminState = ref.watch(adminAuthProvider);
     final role = adminState.user?.role ?? '';
-    final width = isCollapsed
-        ? AdminConstants.sidebarCollapsedWidth
-        : AdminConstants.sidebarExpandedWidth;
+    final width = isMobile
+        ? double.infinity // takes full width of drawer
+        : (isCollapsed
+            ? AdminConstants.sidebarCollapsedWidth
+            : AdminConstants.sidebarExpandedWidth);
 
     final filteredItems = _allNavItems.where((item) {
       if (item.requiredRoles == null) return true;
@@ -207,18 +211,20 @@ class AdminSidebar extends ConsumerWidget {
                   onTap: () => ref.read(adminAuthProvider.notifier).signOut(),
                   color: AdminTheme.error,
                 ),
-                const SizedBox(height: 4),
-                _SidebarItem(
-                  icon: isCollapsed
-                      ? Icons.chevron_right_rounded
-                      : Icons.chevron_left_rounded,
-                  label: 'Collapse',
-                  isActive: false,
-                  isCollapsed: isCollapsed,
-                  onTap: () => ref
-                      .read(sidebarCollapsedProvider.notifier)
-                      .state = !isCollapsed,
-                ),
+                if (!isMobile) ...[
+                  const SizedBox(height: 4),
+                  _SidebarItem(
+                    icon: isCollapsed
+                        ? Icons.chevron_right_rounded
+                        : Icons.chevron_left_rounded,
+                    label: 'Collapse',
+                    isActive: false,
+                    isCollapsed: isCollapsed,
+                    onTap: () => ref
+                        .read(sidebarCollapsedProvider.notifier)
+                        .state = !isCollapsed,
+                  ),
+                ],
               ],
             ),
           ),

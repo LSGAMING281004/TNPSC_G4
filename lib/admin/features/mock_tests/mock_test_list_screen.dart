@@ -43,7 +43,19 @@ class _MockTestListScreenState extends ConsumerState<MockTestListScreen> {
       testsAsync.when(
         data: (tests) {
           if (tests.isEmpty) return const AdminEmptyState(icon: Icons.assignment_outlined, message: 'No mock tests yet.');
-          return Wrap(spacing: 16, runSpacing: 16, children: tests.map((t) => _MockTestCard(test: t)).toList());
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final cardWidth = constraints.maxWidth < 320 ? constraints.maxWidth : 320.0;
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: tests.map((t) => SizedBox(
+                  width: cardWidth,
+                  child: _MockTestCard(test: t),
+                )).toList(),
+              );
+            },
+          );
         },
         loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),
         error: (e, _) => Center(child: Text('Error: $e')),

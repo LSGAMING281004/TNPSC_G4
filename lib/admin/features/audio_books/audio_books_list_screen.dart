@@ -56,41 +56,83 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
         const SizedBox(height: 20),
 
         // Toolbar
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search audio books...',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: AdminTheme.border),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            if (isMobile) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search audio books...',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: AdminTheme.border),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    onPressed: () => context.go('/admin/audio-books/add'),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Audio Book'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AdminTheme.saffron,
+                      foregroundColor: Colors.white,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search audio books...',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: AdminTheme.border),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
+                    onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+                  ),
                 ),
-                onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/admin/audio-books/add'),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Audio Book'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AdminTheme.saffron,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ],
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/admin/audio-books/add'),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add Audio Book'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AdminTheme.saffron,
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 16),
 
@@ -150,43 +192,54 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossCount = constraints.maxWidth > 900 ? 4 : 2;
+        int crossCount = 4;
+        if (constraints.maxWidth < 600) {
+          crossCount = 1;
+        } else if (constraints.maxWidth < 900) {
+          crossCount = 2;
+        }
         final double spacing = 12.0;
         final cardWidth = (constraints.maxWidth - (crossCount - 1) * spacing) / crossCount;
-        final double cardHeight = 150.0;
-        final ratio = cardWidth > 0 ? cardWidth / cardHeight : 1.0;
 
-        return GridView.count(
-          crossAxisCount: crossCount,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: spacing,
-          crossAxisSpacing: spacing,
-          childAspectRatio: ratio,
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
           children: [
-            AdminStatCard(
-              label: 'Total Audio Books',
-              value: '${books.length}',
-              icon: Icons.headphones_rounded,
-              color: AdminTheme.info,
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Total Audio Books',
+                value: '${books.length}',
+                icon: Icons.headphones_rounded,
+                color: AdminTheme.info,
+              ),
             ),
-            AdminStatCard(
-              label: 'Active / Published',
-              value: '$active',
-              icon: Icons.check_circle_outline,
-              color: AdminTheme.success,
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Active / Published',
+                value: '$active',
+                icon: Icons.check_circle_outline,
+                color: AdminTheme.success,
+              ),
             ),
-            AdminStatCard(
-              label: 'Total Plays',
-              value: _formatK(totalPlays),
-              icon: Icons.play_circle_outline,
-              color: AdminTheme.saffron,
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Total Plays',
+                value: _formatK(totalPlays),
+                icon: Icons.play_circle_outline,
+                color: AdminTheme.saffron,
+              ),
             ),
-            AdminStatCard(
-              label: 'Total Minutes',
-              value: _formatK(totalMinutes),
-              icon: Icons.timer_outlined,
-              color: AdminTheme.warning,
+            SizedBox(
+              width: cardWidth,
+              child: AdminStatCard(
+                label: 'Total Minutes',
+                value: _formatK(totalMinutes),
+                icon: Icons.timer_outlined,
+                color: AdminTheme.warning,
+              ),
             ),
           ],
         );

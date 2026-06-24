@@ -36,59 +36,81 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(usersStreamProvider);
+    final isMobile = MediaQuery.of(context).size.width < 900;
+
+    final listWidget = usersAsync.when(
+      data: (users) {
+        if (users.isEmpty) return const AdminEmptyState(icon: Icons.people_outline, message: 'No users registered yet.');
+        return Container(
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
+          child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
+            headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+            columns: const [
+              DataColumn(label: Text('Name')), DataColumn(label: Text('Email')),
+              DataColumn(label: Text('Joined')), DataColumn(label: Text('Last Active')),
+              DataColumn(label: Text('Status')), DataColumn(label: Text('Actions')),
+            ],
+            rows: users.map((u) {
+              final createdAt = (u['createdAt'] as Timestamp?)?.toDate();
+              final lastSeen = (u['lastSeenAt'] as Timestamp?)?.toDate();
+              final suspended = u['isSuspended'] == true;
+              return DataRow(
+                selected: _selectedUserId == u['id'],
+                cells: [
+                  DataCell(Row(children: [
+                    CircleAvatar(radius: 14, backgroundColor: AdminTheme.navy.withValues(alpha: 0.1),
+                      child: Text((u['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+                    const SizedBox(width: 8),
+                    Text(u['name'] ?? 'Unknown', overflow: TextOverflow.ellipsis),
+                  ])),
+                  DataCell(Text(u['email'] ?? '—')),
+                  DataCell(Text(createdAt != null ? DateFormat('MMM dd, yy').format(createdAt) : '—')),
+                  DataCell(Text(lastSeen != null ? formatTimeAgo(lastSeen) : '—', style: const TextStyle(fontSize: 12))),
+                  DataCell(Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: (suspended ? AdminTheme.error : AdminTheme.success).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                    child: Text(suspended ? 'Suspended' : 'Active',
+                      style: TextStyle(fontSize: 11, color: suspended ? AdminTheme.error : AdminTheme.success, fontWeight: FontWeight.w600)),
+                  )),
+                  DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(icon: const Icon(Icons.visibility_outlined, size: 18),
+                      onPressed: () => setState(() => _selectedUserId = u['id']), tooltip: 'View'),
+                    IconButton(icon: Icon(suspended ? Icons.check_circle_outline : Icons.block_outlined, size: 18,
+                      color: suspended ? AdminTheme.success : AdminTheme.error),
+                      onPressed: () => _fs.collection(AdminConstants.usersCollection).doc(u['id']).update({'isSuspended': !suspended}),
+                      tooltip: suspended ? 'Activate' : 'Suspend'),
+                  ])),
+                ],
+              );
+            }).toList(),
+          )),
+        );
+      },
+      loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),
+      error: (e, _) => Center(child: Text('Error: $e')),
+    );
+
+    if (isMobile) {
+      if (_selectedUserId != null) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextButton.icon(
+              onPressed: () => setState(() => _selectedUserId = null),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Back to Users List'),
+            ),
+            const SizedBox(height: 12),
+            UserDetailDrawer(userId: _selectedUserId!, onClose: () => setState(() => _selectedUserId = null)),
+          ],
+        );
+      }
+      return listWidget;
+    }
+
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // User list
-      Expanded(flex: 2, child: usersAsync.when(
-        data: (users) {
-          if (users.isEmpty) return const AdminEmptyState(icon: Icons.people_outline, message: 'No users registered yet.');
-          return Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
-            child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-              headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-              columns: const [
-                DataColumn(label: Text('Name')), DataColumn(label: Text('Email')),
-                DataColumn(label: Text('Joined')), DataColumn(label: Text('Last Active')),
-                DataColumn(label: Text('Status')), DataColumn(label: Text('Actions')),
-              ],
-              rows: users.map((u) {
-                final createdAt = (u['createdAt'] as Timestamp?)?.toDate();
-                final lastSeen = (u['lastSeenAt'] as Timestamp?)?.toDate();
-                final suspended = u['isSuspended'] == true;
-                return DataRow(
-                  selected: _selectedUserId == u['id'],
-                  cells: [
-                    DataCell(Row(children: [
-                      CircleAvatar(radius: 14, backgroundColor: AdminTheme.navy.withValues(alpha: 0.1),
-                        child: Text((u['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
-                      const SizedBox(width: 8),
-                      Text(u['name'] ?? 'Unknown', overflow: TextOverflow.ellipsis),
-                    ])),
-                    DataCell(Text(u['email'] ?? '—')),
-                    DataCell(Text(createdAt != null ? DateFormat('MMM dd, yy').format(createdAt) : '—')),
-                    DataCell(Text(lastSeen != null ? formatTimeAgo(lastSeen) : '—', style: const TextStyle(fontSize: 12))),
-                    DataCell(Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: (suspended ? AdminTheme.error : AdminTheme.success).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                      child: Text(suspended ? 'Suspended' : 'Active',
-                        style: TextStyle(fontSize: 11, color: suspended ? AdminTheme.error : AdminTheme.success, fontWeight: FontWeight.w600)),
-                    )),
-                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-                      IconButton(icon: const Icon(Icons.visibility_outlined, size: 18),
-                        onPressed: () => setState(() => _selectedUserId = u['id']), tooltip: 'View'),
-                      IconButton(icon: Icon(suspended ? Icons.check_circle_outline : Icons.block_outlined, size: 18,
-                        color: suspended ? AdminTheme.success : AdminTheme.error),
-                        onPressed: () => _fs.collection(AdminConstants.usersCollection).doc(u['id']).update({'isSuspended': !suspended}),
-                        tooltip: suspended ? 'Activate' : 'Suspend'),
-                    ])),
-                  ],
-                );
-              }).toList(),
-            )),
-          );
-        },
-        loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),
-        error: (e, _) => Center(child: Text('Error: $e')),
-      )),
+      Expanded(flex: 2, child: listWidget),
       // User detail drawer
       if (_selectedUserId != null) ...[
         const SizedBox(width: 16),

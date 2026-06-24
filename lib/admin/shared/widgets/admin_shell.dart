@@ -17,21 +17,34 @@ class AdminShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pageTitle = ref.watch(adminPageTitleProvider);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 800;
 
     // Auto-collapse sidebar on smaller screens
-    if (screenWidth < 900) {
+    if (screenWidth < 900 && !isMobile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(sidebarCollapsedProvider.notifier).state = true;
       });
     }
 
     return Scaffold(
+      drawer: isMobile
+          ? Drawer(
+              child: AdminSidebar(
+                currentRoute: GoRouterState.of(context).matchedLocation,
+                onNavTap: (route) {
+                  Navigator.of(context).pop(); // Close the drawer
+                  context.go(route);
+                },
+              ),
+            )
+          : null,
       body: Row(
         children: [
-          AdminSidebar(
-            currentRoute: GoRouterState.of(context).matchedLocation,
-            onNavTap: (route) => context.go(route),
-          ),
+          if (!isMobile)
+            AdminSidebar(
+              currentRoute: GoRouterState.of(context).matchedLocation,
+              onNavTap: (route) => context.go(route),
+            ),
           Expanded(
             child: Column(
               children: [
@@ -40,7 +53,7 @@ class AdminShell extends ConsumerWidget {
                   child: Container(
                     color: const Color(0xFFF5F7FA),
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
+                      padding: EdgeInsets.all(isMobile ? 16 : 24),
                       child: child,
                     ),
                   ),

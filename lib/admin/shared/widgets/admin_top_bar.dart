@@ -17,10 +17,12 @@ class AdminTopBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final admin = ref.watch(currentAdminProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 800;
 
     return Container(
       height: AdminConstants.topBarHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -29,41 +31,54 @@ class AdminTopBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       child: Row(
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AdminTheme.textPrimary,
+          if (isMobile) ...[
+            IconButton(
+              icon: const Icon(Icons.menu, color: AdminTheme.textPrimary),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+            const SizedBox(width: 4),
+          ],
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: isMobile ? 18 : 20,
+                fontWeight: FontWeight.w700,
+                color: AdminTheme.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
           if (actions != null) ...actions!,
           if (actions != null) const SizedBox(width: 16),
           // Project badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AdminTheme.navy.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.cloud_outlined, size: 14, color: AdminTheme.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  AdminConstants.firebaseProject,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AdminTheme.textSecondary,
-                    fontWeight: FontWeight.w500,
+          if (!isMobile) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AdminTheme.navy.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.cloud_outlined, size: 14, color: AdminTheme.textSecondary),
+                  const SizedBox(width: 6),
+                  Text(
+                    AdminConstants.firebaseProject,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AdminTheme.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
           // Admin avatar + name
           if (admin != null)
             Row(
@@ -80,15 +95,17 @@ class AdminTopBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  admin.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AdminTheme.textPrimary,
+                if (!isMobile) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    admin.name,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AdminTheme.textPrimary,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
         ],
