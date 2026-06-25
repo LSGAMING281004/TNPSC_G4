@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/admin_user_model.dart';
 import '../../core/constants/admin_constants.dart';
 
@@ -66,14 +67,15 @@ class AdminAuthNotifier extends StateNotifier<AdminAuthState> {
           .get();
 
       final currentUserEmail = _auth.currentUser?.email;
+      final devEmail = dotenv.maybeGet('ADMIN_DEV_EMAIL') ?? '';
 
       if (!doc.exists) {
-        if (currentUserEmail == 'admin@thiral.com' || currentUserEmail == 'admin@thiral.app') {
+        if (currentUserEmail != null && currentUserEmail == devEmail && devEmail.isNotEmpty) {
           final adminUser = AdminUserModel(
             uid: uid,
-            email: currentUserEmail!,
+            email: currentUserEmail,
             name: 'Thiral Admin',
-            role: 'super_admin',
+            role: AdminConstants.roleSuperAdmin,  // 'superAdmin'
             createdAt: DateTime.now(),
           );
           await _firestore
@@ -129,8 +131,10 @@ class AdminAuthNotifier extends StateNotifier<AdminAuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final trimmedEmail = email.trim();
-      if ((trimmedEmail == 'admin@thiral.com' && password == 'admin123') ||
-          (trimmedEmail == 'admin@thiral.app' && password == 'admin@thiral.app')) {
+      final devEmail = dotenv.maybeGet('ADMIN_DEV_EMAIL') ?? '';
+      final devPassword = dotenv.maybeGet('ADMIN_DEV_PASSWORD') ?? '';
+
+      if (trimmedEmail == devEmail && devPassword.isNotEmpty && password == devPassword) {
         try {
           await _auth.signInWithEmailAndPassword(
             email: trimmedEmail,

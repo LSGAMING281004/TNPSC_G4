@@ -157,21 +157,23 @@ class _AdminAudioBooksScreenState extends ConsumerState<AdminAudioBooksScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AdminTheme.border),
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(
-                      AdminTheme.navy.withValues(alpha: 0.04)),
-                  columns: const [
-                    DataColumn(label: Text('Title', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Subject', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Duration', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Plays', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Created', style: TextStyle(fontWeight: FontWeight.w600))),
-                    DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.w600))),
-                  ],
-                  rows: filtered.map((book) => _buildRow(book)).toList(),
+              child: IntrinsicWidth(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(
+                        AdminTheme.navy.withValues(alpha: 0.04)),
+                    columns: const [
+                      DataColumn(label: Text('Title', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Subject', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Duration', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Plays', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Created', style: TextStyle(fontWeight: FontWeight.w600))),
+                      DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.w600))),
+                    ],
+                    rows: filtered.map((book) => _buildRow(book)).toList(),
+                  ),
                 ),
               ),
             );

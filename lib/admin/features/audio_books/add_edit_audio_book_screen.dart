@@ -33,12 +33,14 @@ class _AddEditAudioBookScreenState
   final _narrator = TextEditingController();
   final _durationMin = TextEditingController();
   final _tags = TextEditingController();
+  final _chapterCtrl = TextEditingController();
   String _subject = 'General Studies';
   String _chapter = '';
   bool _isPremium = false;
   bool _isActive = true;
   String? _audioUrl;
   String? _coverUrl;
+  String? _uploadError;
 
   bool get isEditing => widget.audioBookId != null;
 
@@ -48,7 +50,11 @@ class _AddEditAudioBookScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(adminPageTitleProvider.notifier).state =
           isEditing ? 'Edit Audio Book' : 'Add Audio Book';
-      if (isEditing) _loadExisting();
+      if (isEditing) {
+        _loadExisting();
+      } else {
+        _chapterCtrl.text = _chapter;
+      }
     });
   }
 
@@ -68,7 +74,7 @@ class _AddEditAudioBookScreenState
       _durationMin.text = (book.durationSeconds ~/ 60).toString();
       _tags.text = book.tags.join(', ');
       _subject = book.subject;
-      _chapter = book.chapter;
+      _chapterCtrl.text = book.chapter;
       _isPremium = book.isPremium;
       _isActive = book.isActive;
       _audioUrl = book.audioUrl;
@@ -86,6 +92,7 @@ class _AddEditAudioBookScreenState
     _narrator.dispose();
     _durationMin.dispose();
     _tags.dispose();
+    _chapterCtrl.dispose();
     super.dispose();
   }
 
@@ -130,8 +137,7 @@ class _AddEditAudioBookScreenState
                     Expanded(
                         child: _buildTextField(
                             'Chapter / Topic',
-                            TextEditingController(text: _chapter),
-                            onChanged: (v) => _chapter = v)),
+                            _chapterCtrl)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -350,6 +356,13 @@ class _AddEditAudioBookScreenState
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
+        if (_uploadError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _uploadError!,
+            style: const TextStyle(color: AdminTheme.error, fontSize: 12),
+          ),
+        ],
       ],
     );
   }
@@ -374,6 +387,7 @@ class _AddEditAudioBookScreenState
     });
 
     try {
+      setState(() => _uploadError = null);
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       final fullPath = '$storagePath/$fileName';
 
@@ -388,6 +402,7 @@ class _AddEditAudioBookScreenState
       onDone(url);
     } catch (e) {
       if (mounted) {
+        setState(() => _uploadError = 'Upload failed: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Upload failed: $e')),
         );
@@ -414,7 +429,7 @@ class _AddEditAudioBookScreenState
       'descriptionEn': _descEn.text.trim(),
       'descriptionTa': _descTa.text.trim(),
       'subject': _subject,
-      'chapter': _chapter,
+      'chapter': _chapterCtrl.text.trim(),
       'audioUrl': _audioUrl,
       'coverImageUrl': _coverUrl ?? '',
       'durationSeconds': (int.tryParse(_durationMin.text) ?? 0) * 60,

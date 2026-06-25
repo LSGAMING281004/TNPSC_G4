@@ -94,6 +94,7 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
   int _totalQ = 200, _totalMarks = 300, _duration = 180;
   PlatformFile? _pdf;
   bool _uploading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -110,7 +111,7 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate() || _pdf == null) return;
-    setState(() => _uploading = true);
+    setState(() { _uploading = true; _errorMessage = null; });
     try {
       final path = '${AppConstants.mediaStoragePath}/${AdminConstants.previousPapersPath}/$_year/${DateTime.now().millisecondsSinceEpoch}.pdf';
       
@@ -130,6 +131,10 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
       });
       await AdminActivityLogService.log(action: 'Added previous paper', targetCollection: AdminConstants.previousPapersCollection);
       if (mounted) context.go('/admin/previous-papers');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Upload failed: $e');
+      }
     } finally { if (mounted) setState(() => _uploading = false); }
   }
 
@@ -156,12 +161,31 @@ class _AddPaperScreenState extends ConsumerState<AddPaperScreen> {
           Expanded(child: TextFormField(initialValue: '$_duration', decoration: const InputDecoration(labelText: 'Duration (min)'), keyboardType: TextInputType.number, onChanged: (v) => _duration = int.tryParse(v) ?? _duration)),
         ]),
         const SizedBox(height: 20),
+        if (_errorMessage != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AdminTheme.error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AdminTheme.error.withValues(alpha: 0.3)),
+            ),
+            child: Row(children: [
+              const Icon(Icons.error_outline, color: AdminTheme.error, size: 18),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_errorMessage!, style: const TextStyle(color: AdminTheme.error, fontSize: 13))),
+            ]),
+          ),
         GestureDetector(onTap: _pickPdf, child: Container(
           width: double.infinity, height: 100,
           decoration: BoxDecoration(border: Border.all(color: _pdf != null ? AdminTheme.success : AdminTheme.border, width: 2),
             borderRadius: BorderRadius.circular(12), color: AdminTheme.background),
           child: Center(child: Text(_pdf != null ? _pdf!.name : 'Click to select PDF', style: TextStyle(color: _pdf != null ? AdminTheme.success : AdminTheme.textSecondary))),
         )),
+        if (_uploading) ...[
+          const SizedBox(height: 12),
+          const LinearProgressIndicator(color: AdminTheme.saffron),
+        ],
         const SizedBox(height: 24),
         Row(children: [
           OutlinedButton(onPressed: () => context.go('/admin/previous-papers'), child: const Text('Cancel')),

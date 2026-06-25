@@ -140,58 +140,60 @@ class _QuotesListScreenState extends ConsumerState<QuotesListScreen> {
                   ),
                 ],
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-                  columns: const [
-                    DataColumn(label: Text('Tamil Text')),
-                    DataColumn(label: Text('English Text')),
-                    DataColumn(label: Text('Actions')),
-                  ],
-                  rows: items.map((q) => DataRow(cells: [
-                    DataCell(
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 350),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          q.ta,
-                          style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+              child: IntrinsicWidth(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+                    columns: const [
+                      DataColumn(label: Text('Tamil Text')),
+                      DataColumn(label: Text('English Text')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: items.map((q) => DataRow(cells: [
+                      DataCell(
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 350),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            q.ta,
+                            style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    ),
-                    DataCell(
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 350),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          q.en,
-                          style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                      DataCell(
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 350),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            q.en,
+                            style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    ),
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 18, color: AdminTheme.navy),
-                            onPressed: () => _showAddEditDialog(q),
-                            tooltip: 'Edit Quote',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
-                            onPressed: () => _deleteQuote(q),
-                            tooltip: 'Delete Quote',
-                          ),
-                        ],
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 18, color: AdminTheme.navy),
+                              onPressed: () => _showAddEditDialog(q),
+                              tooltip: 'Edit Quote',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
+                              onPressed: () => _deleteQuote(q),
+                              tooltip: 'Delete Quote',
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ])).toList(),
+                    ])).toList(),
+                  ),
                 ),
               ),
             );

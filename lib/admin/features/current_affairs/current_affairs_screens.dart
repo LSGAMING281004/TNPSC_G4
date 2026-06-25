@@ -45,28 +45,30 @@ class _CurrentAffairsListScreenState extends ConsumerState<CurrentAffairsListScr
           if (items.isEmpty) return const AdminEmptyState(icon: Icons.newspaper_outlined, message: 'No current affairs articles yet.');
           return Container(
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
-            child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-              headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-              columns: const [
-                DataColumn(label: Text('Date')), DataColumn(label: Text('Title')),
-                DataColumn(label: Text('Category')), DataColumn(label: Text('Status')),
-                DataColumn(label: Text('Quiz?')), DataColumn(label: Text('Actions')),
-              ],
-              rows: items.map((a) => DataRow(cells: [
-                DataCell(Text(a.publishedAt != null ? DateFormat('MMM dd').format(a.publishedAt!) : '—')),
-                DataCell(SizedBox(width: 250, child: Text(a.titleEn.isNotEmpty ? a.titleEn : a.titleTa, overflow: TextOverflow.ellipsis))),
-                DataCell(Text(a.category)),
-                DataCell(_statusBadge(a.status)),
-                DataCell(Icon(a.isQuiz ? Icons.check_circle : Icons.remove, size: 16,
-                  color: a.isQuiz ? AdminTheme.success : AdminTheme.textSecondary)),
-                DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-                  IconButton(icon: const Icon(Icons.edit_outlined, size: 18),
-                    onPressed: () => context.go('/admin/current-affairs/edit?id=${a.id}')),
-                  IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
-                    onPressed: () => _fs.collection(AdminConstants.currentAffairsCollection).doc(a.id).delete()),
-                ])),
-              ])).toList(),
-            )),
+            child: IntrinsicWidth(
+              child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
+                headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+                columns: const [
+                  DataColumn(label: Text('Date')), DataColumn(label: Text('Title')),
+                  DataColumn(label: Text('Category')), DataColumn(label: Text('Status')),
+                  DataColumn(label: Text('Quiz?')), DataColumn(label: Text('Actions')),
+                ],
+                rows: items.map((a) => DataRow(cells: [
+                  DataCell(Text(a.publishedAt != null ? DateFormat('MMM dd').format(a.publishedAt!) : '—')),
+                  DataCell(SizedBox(width: 250, child: Text(a.titleEn.isNotEmpty ? a.titleEn : a.titleTa, overflow: TextOverflow.ellipsis))),
+                  DataCell(Text(a.category)),
+                  DataCell(_statusBadge(a.status)),
+                  DataCell(Icon(a.isQuiz ? Icons.check_circle : Icons.remove, size: 16,
+                    color: a.isQuiz ? AdminTheme.success : AdminTheme.textSecondary)),
+                  DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(icon: const Icon(Icons.edit_outlined, size: 18),
+                      onPressed: () => context.go('/admin/current-affairs/edit?id=${a.id}')),
+                    IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
+                      onPressed: () => _fs.collection(AdminConstants.currentAffairsCollection).doc(a.id).delete()),
+                  ])),
+                ])).toList(),
+              )),
+            ),
           );
         },
         loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),
@@ -164,8 +166,30 @@ class _AddEditArticleScreenState extends ConsumerState<AddEditArticleScreen> {
         const SizedBox(height: 8),
         TextFormField(controller: _titleEn, decoration: const InputDecoration(labelText: 'Title (English)'), validator: (v) => v!.isEmpty ? 'Required' : null),
         const SizedBox(height: 12),
-        TextFormField(controller: _summaryTa, decoration: InputDecoration(labelText: 'Summary Tamil', counterText: '${_summaryTa.text.length}/300'), maxLines: 2, maxLength: 300),
-        TextFormField(controller: _summaryEn, decoration: InputDecoration(labelText: 'Summary English', counterText: '${_summaryEn.text.length}/300'), maxLines: 2, maxLength: 300),
+        TextFormField(
+          controller: _summaryTa,
+          decoration: InputDecoration(
+            labelText: 'Summary Tamil',
+            counterText: '${_summaryTa.text.length}/300',
+          ),
+          maxLines: 2,
+          maxLength: 300,
+          buildCounter: (context, {required currentLength, required isFocused, required maxLength}) =>
+            Text('$currentLength/$maxLength', style: const TextStyle(fontSize: 12, color: AdminTheme.textSecondary)),
+          onChanged: (_) => setState(() {}),
+        ),
+        TextFormField(
+          controller: _summaryEn,
+          decoration: InputDecoration(
+            labelText: 'Summary English',
+            counterText: '${_summaryEn.text.length}/300',
+          ),
+          maxLines: 2,
+          maxLength: 300,
+          buildCounter: (context, {required currentLength, required isFocused, required maxLength}) =>
+            Text('$currentLength/$maxLength', style: const TextStyle(fontSize: 12, color: AdminTheme.textSecondary)),
+          onChanged: (_) => setState(() {}),
+        ),
         const SizedBox(height: 12),
         TextFormField(controller: _contentTa, decoration: const InputDecoration(labelText: 'Content (Tamil)'), maxLines: 5),
         const SizedBox(height: 8),

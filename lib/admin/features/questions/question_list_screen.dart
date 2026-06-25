@@ -89,37 +89,39 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
           if (questions.isEmpty) return const AdminEmptyState(icon: Icons.quiz_outlined, message: 'No questions found.');
           return Container(
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
-            child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-              headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-              columns: const [
-                DataColumn(label: Text('#')), DataColumn(label: Text('Subject')),
-                DataColumn(label: Text('Chapter')), DataColumn(label: Text('Difficulty')),
-                DataColumn(label: Text('Preview')), DataColumn(label: Text('Actions')),
-              ],
-              rows: questions.asMap().entries.map((e) {
-                final i = e.key; final q = e.value;
-                return DataRow(cells: [
-                  DataCell(Text('${i + 1}')),
-                  DataCell(_badge(q.subject, _subjectColor(q.subject))),
-                  DataCell(Text(q.chapter, overflow: TextOverflow.ellipsis)),
-                  DataCell(_badge(q.difficulty, _diffColor(q.difficulty))),
-                  DataCell(SizedBox(width: 300, child: Text(q.questionEn.isNotEmpty ? q.questionEn : q.questionTa, overflow: TextOverflow.ellipsis))),
-                  DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(icon: const Icon(Icons.edit_outlined, size: 18), onPressed: () => context.go('/admin/questions/edit?id=${q.id}')),
-                    IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
-                      onPressed: () async {
-                        final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
-                          title: const Text('Delete?'), actions: [
-                            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-                            ElevatedButton(onPressed: () => Navigator.pop(c, true),
-                              style: ElevatedButton.styleFrom(backgroundColor: AdminTheme.error), child: const Text('Delete')),
-                          ]));
-                        if (ok == true) await _fs.collection(AdminConstants.questionsCollection).doc(q.id).delete();
-                      }),
-                  ])),
-                ]);
-              }).toList(),
-            )),
+            child: IntrinsicWidth(
+              child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
+                headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+                columns: const [
+                  DataColumn(label: Text('#')), DataColumn(label: Text('Subject')),
+                  DataColumn(label: Text('Chapter')), DataColumn(label: Text('Difficulty')),
+                  DataColumn(label: Text('Preview')), DataColumn(label: Text('Actions')),
+                ],
+                rows: questions.asMap().entries.map((e) {
+                  final i = e.key; final q = e.value;
+                  return DataRow(cells: [
+                    DataCell(Text('${i + 1}')),
+                    DataCell(_badge(q.subject, _subjectColor(q.subject))),
+                    DataCell(Text(q.chapter, overflow: TextOverflow.ellipsis)),
+                    DataCell(_badge(q.difficulty, _diffColor(q.difficulty))),
+                    DataCell(SizedBox(width: 300, child: Text(q.questionEn.isNotEmpty ? q.questionEn : q.questionTa, overflow: TextOverflow.ellipsis))),
+                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(icon: const Icon(Icons.edit_outlined, size: 18), onPressed: () => context.go('/admin/questions/edit?id=${q.id}')),
+                      IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
+                        onPressed: () async {
+                          final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+                            title: const Text('Delete?'), actions: [
+                              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+                              ElevatedButton(onPressed: () => Navigator.pop(c, true),
+                                style: ElevatedButton.styleFrom(backgroundColor: AdminTheme.error), child: const Text('Delete')),
+                            ]));
+                          if (ok == true) await _fs.collection(AdminConstants.questionsCollection).doc(q.id).delete();
+                        }),
+                    ])),
+                  ]);
+                }).toList(),
+              )),
+            ),
           );
         },
         loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),

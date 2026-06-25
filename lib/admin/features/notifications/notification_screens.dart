@@ -115,27 +115,29 @@ class _NotificationHistoryScreenState extends ConsumerState<NotificationHistoryS
         if (items.isEmpty) return const AdminEmptyState(icon: Icons.notifications_none, message: 'No notifications sent yet.');
         return Container(
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
-          child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-            headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-            columns: const [
-              DataColumn(label: Text('Title')), DataColumn(label: Text('Body')),
-              DataColumn(label: Text('Topic')), DataColumn(label: Text('Sent')), DataColumn(label: Text('Status')),
-            ],
-            rows: items.map((n) {
-              final sentAt = (n['sentAt'] as Timestamp?)?.toDate();
-              return DataRow(cells: [
-                DataCell(SizedBox(width: 180, child: Text(n['title'] ?? '', overflow: TextOverflow.ellipsis))),
-                DataCell(SizedBox(width: 220, child: Text(n['body'] ?? '', overflow: TextOverflow.ellipsis))),
-                DataCell(Text(n['topic'] ?? '')),
-                DataCell(Text(sentAt != null ? DateFormat('MMM dd, HH:mm').format(sentAt) : '—')),
-                DataCell(Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: AdminTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                  child: Text(n['status'] ?? 'Sent', style: const TextStyle(color: AdminTheme.success, fontSize: 11, fontWeight: FontWeight.w600)),
-                )),
-              ]);
-            }).toList(),
-          )),
+          child: IntrinsicWidth(
+            child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
+              headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+              columns: const [
+                DataColumn(label: Text('Title')), DataColumn(label: Text('Body')),
+                DataColumn(label: Text('Topic')), DataColumn(label: Text('Sent')), DataColumn(label: Text('Status')),
+              ],
+              rows: items.map((n) {
+                final sentAt = (n['sentAt'] as Timestamp?)?.toDate();
+                return DataRow(cells: [
+                  DataCell(SizedBox(width: 180, child: Text(n['title'] ?? '', overflow: TextOverflow.ellipsis))),
+                  DataCell(SizedBox(width: 220, child: Text(n['body'] ?? '', overflow: TextOverflow.ellipsis))),
+                  DataCell(Text(n['topic'] ?? '')),
+                  DataCell(Text(sentAt != null ? DateFormat('MMM dd, HH:mm').format(sentAt) : '—')),
+                  DataCell(Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: AdminTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                    child: Text(n['status'] ?? 'Sent', style: const TextStyle(color: AdminTheme.success, fontSize: 11, fontWeight: FontWeight.w600)),
+                  )),
+                ]);
+              }).toList(),
+            )),
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

@@ -49,23 +49,25 @@ class _MaterialsListScreenState extends ConsumerState<MaterialsListScreen> {
           if (items.isEmpty) return const AdminEmptyState(icon: Icons.menu_book_outlined, message: 'No study materials uploaded yet.');
           return Container(
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AdminTheme.border)),
-            child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-              headingRowColor: WidgetStateProperty.all(AdminTheme.background),
-              columns: const [
-                DataColumn(label: Text('Title')), DataColumn(label: Text('Subject')),
-                DataColumn(label: Text('Chapter')), DataColumn(label: Text('Size')),
-                DataColumn(label: Text('Downloads')), DataColumn(label: Text('Uploaded')),
-                DataColumn(label: Text('Actions')),
-              ],
-              rows: items.map((m) => DataRow(cells: [
-                DataCell(SizedBox(width: 200, child: Text(m.titleEn.isNotEmpty ? m.titleEn : m.titleTa, overflow: TextOverflow.ellipsis))),
-                DataCell(Text(m.subject)), DataCell(Text(m.chapter)),
-                DataCell(Text(m.fileSizeFormatted)), DataCell(Text('${m.downloadCount}')),
-                DataCell(Text(m.uploadedAt != null ? DateFormat('MMM dd, yyyy').format(m.uploadedAt!) : '—')),
-                DataCell(IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
-                  onPressed: () => _delete(m))),
-              ])).toList(),
-            )),
+            child: IntrinsicWidth(
+              child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
+                headingRowColor: WidgetStateProperty.all(AdminTheme.background),
+                columns: const [
+                  DataColumn(label: Text('Title')), DataColumn(label: Text('Subject')),
+                  DataColumn(label: Text('Chapter')), DataColumn(label: Text('Size')),
+                  DataColumn(label: Text('Downloads')), DataColumn(label: Text('Uploaded')),
+                  DataColumn(label: Text('Actions')),
+                ],
+                rows: items.map((m) => DataRow(cells: [
+                  DataCell(SizedBox(width: 200, child: Text(m.titleEn.isNotEmpty ? m.titleEn : m.titleTa, overflow: TextOverflow.ellipsis))),
+                  DataCell(Text(m.subject)), DataCell(Text(m.chapter)),
+                  DataCell(Text(m.fileSizeFormatted)), DataCell(Text('${m.downloadCount}')),
+                  DataCell(Text(m.uploadedAt != null ? DateFormat('MMM dd, yyyy').format(m.uploadedAt!) : '—')),
+                  DataCell(IconButton(icon: const Icon(Icons.delete_outline, size: 18, color: AdminTheme.error),
+                    onPressed: () => _delete(m))),
+                ])).toList(),
+              )),
+            ),
           );
         },
         loading: () => const Center(child: Padding(padding: EdgeInsets.all(48), child: CircularProgressIndicator())),
@@ -103,6 +105,8 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
   String _subject = 'Tamil', _chapter = '', _titleTa = '', _titleEn = '', _descTa = '', _descEn = '';
   PlatformFile? _file;
   bool _uploading = false;
+  String? _errorMessage;
+
   @override
   void initState() {
     super.initState();
@@ -118,7 +122,7 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
 
   Future<void> _upload() async {
     if (!_formKey.currentState!.validate() || _file == null) return;
-    setState(() { _uploading = true; });
+    setState(() { _uploading = true; _errorMessage = null; });
     try {
       final storagePath = '${AppConstants.mediaStoragePath}/${AdminConstants.studyMaterialsPath}/$_subject/$_chapter/${DateTime.now().millisecondsSinceEpoch}.pdf';
       
@@ -137,6 +141,10 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
       ).toFirestore());
       await AdminActivityLogService.log(action: 'Uploaded study material', targetCollection: AdminConstants.studyMaterialsCollection);
       if (mounted) context.go('/admin/materials');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Upload failed: $e');
+      }
     } finally { if (mounted) setState(() => _uploading = false); }
   }
 
@@ -158,6 +166,21 @@ class _UploadMaterialScreenState extends ConsumerState<UploadMaterialScreen> {
         const SizedBox(height: 12),
         TextFormField(decoration: const InputDecoration(labelText: 'Description (English)'), maxLines: 2, onChanged: (v) => _descEn = v),
         const SizedBox(height: 20),
+        if (_errorMessage != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AdminTheme.error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AdminTheme.error.withValues(alpha: 0.3)),
+            ),
+            child: Row(children: [
+              const Icon(Icons.error_outline, color: AdminTheme.error, size: 18),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_errorMessage!, style: const TextStyle(color: AdminTheme.error, fontSize: 13))),
+            ]),
+          ),
         // File picker area
         GestureDetector(onTap: _pickFile, child: Container(
           width: double.infinity, height: 120,

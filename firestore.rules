@@ -1,3 +1,9 @@
+// NOTE: Firebase Storage rules (configured in storage.rules or Firebase console)
+// must allow authenticated admin writes to:
+// - media/study_materials/**
+// - media/audio_books/**
+// - media/previous_papers/**
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
